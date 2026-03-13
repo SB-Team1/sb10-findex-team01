@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import lombok.AccessLevel;
@@ -74,10 +75,10 @@ public class IndexData {
   private Double tradingQuantity;
   //지수에 포함된 종목의 거래대금 총합
   @Column(nullable = false)
-  private Long tradingPrice;
+  private BigInteger tradingPrice;
   //지수에 포함된 종목의 시가 총액
   @Column(nullable = false)
-  private Long marketTotalAmount;
+  private BigInteger marketTotalAmount;
 
   @Column(nullable = false)
   @Enumerated(value = EnumType.STRING)
@@ -94,8 +95,8 @@ public class IndexData {
       Double versus,
       Double fluctuationRate,
       Double tradingQuantity,
-      Long tradingPrice,
-      Long marketTotalAmount
+      BigInteger tradingPrice,
+      BigInteger marketTotalAmount
   ) {
     this.indexInfo = indexInfo;
     this.baseDate = baseDate;
@@ -143,11 +144,11 @@ public class IndexData {
     this.tradingQuantity = tradingQuantity;
   }
 
-  public void updateTradingPrice(Long tradingPrice) {
+  public void updateTradingPrice(BigInteger tradingPrice) {
     this.tradingPrice = tradingPrice;
   }
 
-  public void updateMarketTotalAmount(Long marketTotalAmount) {
+  public void updateMarketTotalAmount(BigInteger marketTotalAmount) {
     this.marketTotalAmount = marketTotalAmount;
   }
 
