@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,6 +26,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public class IndexData extends BaseEntity {
 
   //지수 정보
+  @Setter
   @ManyToOne
   @JoinColumn(name = "index_info_id")
   private IndexInfo indexInfo;
@@ -63,7 +65,7 @@ public class IndexData extends BaseEntity {
   @Column(nullable = false)
   private BigInteger marketTotalAmount;
 
-  @Column(nullable = false, columnDefinition = "ACTIVE")
+  @Column(nullable = false)
   @Enumerated(value = EnumType.STRING)
   private DeletedStatus isDeleted;
 

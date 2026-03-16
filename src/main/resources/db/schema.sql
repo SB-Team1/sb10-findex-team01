@@ -1,12 +1,13 @@
 CREATE TABLE index_infos
 (
   id                   SERIAL PRIMARY KEY,
+  created_at           timestamptz           NOT NULL,
+  updated_at           timestamptz           NOT NULL,
   index_classification VARCHAR(240)          NOT NULL,
   index_name           VARCHAR(240)          NOT NULL,
   employed_items_count int                   NOT NULL,
   base_point_in_time   date                  NOT NULL,
   base_index           DOUBLE PRECISION      NOT NULL,
-  created_at           timestamptz           NOT NULL,
   source_type          VARCHAR(10)           NOT NULL CHECK (source_type IN ('USER', 'OPEN_API')),
   favorite             BOOLEAN DEFAULT FALSE NOT NULL,
   is_deleted           VARCHAR(10)           NOT NULL CHECK (is_deleted in ('ACTIVE', 'DELETED'))

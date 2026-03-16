@@ -40,13 +40,19 @@ public class IndexInfo extends BaseEntity {
   @Column
   private boolean favorite;
 
-  @Column(nullable = false, columnDefinition = "ACTIVE")
+  @Column(nullable = false)
   @Enumerated(value = EnumType.STRING)
   private DeletedStatus isDeleted;
 
   @Builder
-  public IndexInfo(String indexClassification, String indexName, Integer employedItemsCount,
-      LocalDate basePointInTime, Double baseIndex, SourceType sourceType, boolean favorite,
+  public IndexInfo(
+      String indexClassification,
+      String indexName,
+      Integer employedItemsCount,
+      LocalDate basePointInTime,
+      Double baseIndex,
+      SourceType sourceType,
+      boolean favorite,
       DeletedStatus isDeleted) {
     this.indexClassification = indexClassification;
     this.indexName = indexName;
