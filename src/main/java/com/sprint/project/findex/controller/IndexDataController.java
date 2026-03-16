@@ -4,6 +4,7 @@ import com.sprint.project.findex.dto.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.IndexDataDto;
 import com.sprint.project.findex.dto.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
+import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,12 +51,29 @@ public class IndexDataController {
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 
-    @GetMapping(value = "/performance/favorite")
-    public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance (
+  @GetMapping(value = "/performance/favorite")
+  @Operation(summary = "주요 지수 현황 조회")
+  public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance (
         @RequestParam("periodType") String periodType
   ){
       List<IndexPerformanceDto> dto = dashboardService.findFavoriteIndexPerformance(periodType);
 
       return ResponseEntity.status(HttpStatus.OK).body(dto);
-    }
   }
+
+  @GetMapping(value = "/performance/rank")
+  @Operation(summary = "지수 성과 랭킹 조회")
+  public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
+      @RequestParam(value = "indexInfoId", required = false) Long indexInfoId,
+      @RequestParam("periodType") String periodType,
+      @RequestParam(value = "limit", defaultValue = "10") int limit
+  ) {
+    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
+        indexInfoId,
+        periodType,
+        limit
+    );
+
+    return ResponseEntity.status(HttpStatus.OK).body(dtos);
+  }
+}
