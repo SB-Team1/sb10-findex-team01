@@ -1,11 +1,9 @@
 package com.sprint.project.findex.dto;
 
-import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SourceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigInteger;
 import java.time.LocalDate;
-import lombok.Builder;
 
 @Schema(description = "지수 데이터 DTO")
 public record IndexDataDto(
@@ -38,10 +36,3 @@ public record IndexDataDto(
 ) {
 
 }
-
-//@Builder
-//public record IndexDataDto(Long id, IndexInfo indexInfo, LocalDate baseDate,
-//                           SourceType sourceType, Double marketPrice, Double closingPrice,
-//                           Double highPrice, Double lowPrice, Double versus, Double fluctuationRate,
-//                           Double tradingQuantity, BigInteger tradingPrice,
-//                           BigInteg
