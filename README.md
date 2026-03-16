@@ -1,6 +1,6 @@
-# com.sprint.project.findex.Findex
+# Findex
 
-SB10-com.sprint.project.findex.Findex-team01
+SB10-Findex-team01
 
 ### 기본 설정
 

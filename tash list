@@ -1,0 +1,442 @@
+[33mcommit 18c1b9b9cdbe3bf975adb7a3fdb5012dd3573d8e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat-4-register-auto-sync-config[m[33m, [m[1;31morigin/feat-4-register-auto-sync-config[m[33m, [m[1;31morigin/dev[m[33m)[m
+Merge: f936dea 261f0c6
+Author: LEE KYUBIN <gyutann1171@gmail.com>
+Date:   Mon Mar 16 14:46:47 2026 +0900
+
+    Merge pull request #37 from zinuzanu/feature/8-10-auto-sync-batch
+    
+    feat: 자동 연동 배치 실행 및 실행 주기 설정 외부화
+
+[33mcommit f936dea89d930b728c5c6255e2a16c488814e4f2[m
+Merge: aba20a6 3f99243
+Author: HaEun Kim <162269186+shong9124@users.noreply.github.com>
+Date:   Mon Mar 16 14:41:17 2026 +0900
+
+    Merge pull request #36 from plzslp/feature/14-index-data-create
+    
+    Feature/14 index data create
+
+[33mcommit 3f9924308218832df61bddd20e50f59b532493b6[m
+Merge: b8b3706 aba20a6
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 14:22:16 2026 +0900
+
+    Merge remote-tracking branch 'origin/dev' into feature/14-index-data-create
+
+[33mcommit 261f0c63ebef5b032b683ac36bf162384a053a98[m
+Author: zinuzanu <wsx104301@naver.com>
+Date:   Mon Mar 16 14:20:50 2026 +0900
+
+    feat: 자동 연동 배치 실행 및 실행 주기 설정 외부화
+    
+    --- 본문 ---
+    - Spring Scheduler 기반 자동 연동 배치 실행 구조 구현
+    - AutoSyncScheduler 클래스 생성
+    - @Scheduled 메서드 구현
+    - 배치 실행 cron 설정을 application.yml로 분리
+    - 외부 설정값을 통해 Scheduler 실행 주기 주입
+    
+    --- 꼬리말 ---
+    close: #8 #10
+
+M	src/main/java/com/sprint/project/findex/Findex.java
+A	src/main/java/com/sprint/project/findex/scheduler/AutoSyncScheduler.java
+M	src/main/resources/application.yml
+
+[33mcommit aba20a6f20222ce569e5723a563a54778488aa53[m
+Merge: ccf579a 7b890a7
+Author: LEE KYUBIN <gyutann1171@gmail.com>
+Date:   Mon Mar 16 14:12:00 2026 +0900
+
+    Merge pull request #35 from shong9124/feature/2-dashboard-index-performance
+    
+    feat: 대시보드 주요 지수 현황 조회
+
+[33mcommit b8b3706ab6c8d7a7361a9935c0e8f917b73d54a4[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 14:08:49 2026 +0900
+
+    refactor: 지수 데이터 도메인 구조 개선 및 무결성 강화
+    
+    --- 본문 ---
+    - dev 브랜치의 최신 디렉토리 구조 반영 및 import 의존성 수정
+    - IndexData: BaseEntity를 상속받도록 변경하여 중복 제거 및 생성자에 Builder 패턴 도입
+    - IndexDataMapper: 누락 방지용 Mapping 어노테이션 추가
+    - IndexDataCreateRequest: 입력 필드에 NotNull 제약조건 추가
+    - IndexInfoRepository 추가
+    
+    --- 꼬리말 ---
+
+R077	src/main/java/com/sprint/project/findex/indexdata/controller/IndexDataController.java	src/main/java/com/sprint/project/findex/controller/IndexDataController.java
+R082	src/main/java/com/sprint/project/findex/indexdata/dto/IndexDataCreateRequest.java	src/main/java/com/sprint/project/findex/dto/IndexDataCreateRequest.java
+R090	src/main/java/com/sprint/project/findex/indexdata/dto/IndexDataDto.java	src/main/java/com/sprint/project/findex/dto/IndexDataDto.java
+R071	src/main/java/com/sprint/project/findex/indexdata/entity/IndexData.java	src/main/java/com/sprint/project/findex/entity/IndexData.java
+D	src/main/java/com/sprint/project/findex/indexdata/mapper/IndexDataMapper.java
+A	src/main/java/com/sprint/project/findex/mapper/IndexDataMapper.java
+R055	src/main/java/com/sprint/project/findex/indexdata/repository/IndexDataRepository.java	src/main/java/com/sprint/project/findex/repository/IndexDataRepository.java
+A	src/main/java/com/sprint/project/findex/repository/IndexInfoRepository.java
+R050	src/main/java/com/sprint/project/findex/indexdata/service/IndexDataService.java	src/main/java/com/sprint/project/findex/service/IndexDataService.java
+
+[33mcommit 7b890a753de1ebc96e08794c5aa0b2a3dbb92797[m
+Author: shong9124 <shifty393@gmail.com>
+Date:   Mon Mar 16 14:03:28 2026 +0900
+
+    feat: 대시보드 주요 지수 현황 조회
+    
+    --- 본문 ---
+    대시보드 주요 지수(즐겨찾기된 지수)의 일간, 주간, 월간 종가를 비교하는 기능을 구현
+    
+    --- 꼬리말 ---
+    feat: #2
+
+A	src/main/java/com/sprint/project/findex/controller/IndexDataController.java
+A	src/main/java/com/sprint/project/findex/dto/dashboard/DashboardQueryDto.java
+A	src/main/java/com/sprint/project/findex/dto/dashboard/IndexPerformanceDto.java
+A	src/main/java/com/sprint/project/findex/repository/DashboardRepository.java
+A	src/main/java/com/sprint/project/findex/service/DashboardService.java
+
+[33mcommit 52562d7611438fb4c66765d6d2de8419d1ce6809[m
+Merge: 2315af7 ccf579a
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 11:21:54 2026 +0900
+
+    Merge remote-tracking branch 'origin/dev' into feature/14-index-data-create
+
+[33mcommit ccf579a641287cb8cf44f9d59530f74961c320db[m
+Merge: de115ac db8970e
+Author: LEE KYUBIN <gyutann1171@gmail.com>
+Date:   Mon Mar 16 11:09:21 2026 +0900
+
+    Merge pull request #34 from jonasInDark/feature/issue-33
+    
+    Feature/issue 33
+
+[33mcommit 2315af71f4085cdeec7f8d7c2920bafdce057637[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 10:59:50 2026 +0900
+
+    feat: 지수데이터 Controller, Dto 구현
+    
+    --- 본문 ---
+    - IndexDataController: 지수 데이터 등록(POST) API 엔드포인트 구현
+    - IndexDataDto: Swagger 문서화를 위한 어노테이션 추가
+    
+    --- 꼬리말 ---
+
+A	src/main/java/com/sprint/project/findex/indexdata/controller/IndexDataController.java
+A	src/main/java/com/sprint/project/findex/indexdata/dto/IndexDataDto.java
+
+[33mcommit db8970ef22a299d595e530c2dafabf01e7a48158[m
+Author: 8c8c8c8c8c8 <8c8c8c8c8c8@gmail.com>
+Date:   Mon Mar 16 10:49:50 2026 +0900
+
+    feat: 지수 정보 엔티티 구현, DDL 작성, 프로젝트 구조 변경
+    
+    --- 본문 ---
+    - 지수 정보 엔티티 구현
+    - 엔티티 공통 부분 구현
+    - layered-architecture 구조로 변경
+    - DDL(resources/db/schema.sql) 작성
+    
+    --- 꼬리말 ---
+    close: #33
+
+M	build.gradle
+M	src/main/java/com/sprint/project/findex/Findex.java
+A	src/main/java/com/sprint/project/findex/config/FindexConfig.java
+A	src/main/java/com/sprint/project/findex/dto/IndexInfoDto.java
+R051	src/main/java/com/sprint/project/findex/global/entity/DeletedStatus.java	src/main/java/com/sprint/project/findex/entity/DeletedStatus.java
+A	src/main/java/com/sprint/project/findex/entity/IndexInfo.java
+A	src/main/java/com/sprint/project/findex/entity/SourceType.java
+A	src/main/java/com/sprint/project/findex/entity/base/BaseEntity.java
+D	src/main/java/com/sprint/project/findex/global/entity/SourceType.java
+D	src/main/java/com/sprint/project/findex/indexinfo/entity/IndexInfo.java
+A	src/main/resources/db/schema.sql
+
+[33mcommit 4b390e3cc5ace1f2daf8d9947051e3cc47f31b29[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 10:47:42 2026 +0900
+
+    feat: 지수 데이터 Service, CreateRequest 구현
+    
+    --- 본문 ---
+    - IndexDataService: 지수 데이터 생성 로직 및 복합 유니크 중복 검증 로직 구현
+    - IndexDataCreateRequest: 유효성 검증 및 Swagger 문서화를 위한 어노테이션 추가
+    
+    --- 꼬리말 ---
+
+A	src/main/java/com/sprint/project/findex/indexdata/dto/IndexDataCreateRequest.java
+A	src/main/java/com/sprint/project/findex/indexdata/service/IndexDataService.java
+
+[33mcommit 9fc5afebbc490104b7d13798ebbf6ddc410de9a1[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Mon Mar 16 10:40:16 2026 +0900
+
+    feat: 지수 데이터 Mapper, Repository 구현
+    
+    --- 본문 ---
+    - IndexDataMapper에 toDto() 추가
+    - IndexDataRepository에 복합 키 중복 검사를 위한 exists... 메서드 추가
+    
+    --- 꼬리말 ---
+
+A	src/main/java/com/sprint/project/findex/indexdata/mapper/IndexDataMapper.java
+A	src/main/java/com/sprint/project/findex/indexdata/repository/IndexDataRepository.java
+
+[33mcommit 2414e522167eeecb4d1eaee3e9ac5c5352861db5[m
+Merge: ab2375f de115ac
+Author: 8c8c8c8c8c8 <8c8c8c8c8c8@gmail.com>
+Date:   Fri Mar 13 16:27:05 2026 +0900
+
+    Merge branch 'dev' into feature/issue-22
+    
+    # Conflicts:
+    #       src/main/java/com/sprint/project/findex/indexinfo/entity/IndexInfo.java
+
+[33mcommit ab2375f1354fd38526668648a931324660f606c8[m
+Author: 8c8c8c8c8c8 <8c8c8c8c8c8@gmail.com>
+Date:   Fri Mar 13 16:20:39 2026 +0900
+
+    feat: 지수 정보 엔티티, API 데이터 요청, 응답 Dto 구현
+    
+    --- 본문 ---
+    - IndexInfo: 최초 구현, 추후 update 메소드 구현 예정
+    - StockMarketIndexRequest: 공공데이터 api 에 보낼 request dto 구현
+    - StockMarketIndexResponse: 공공데이터 api 응답 dto 구현
+    
+    --- 꼬리말 ---
+
+A	src/main/java/com/sprint/project/findex/indexinfo/entity/IndexInfo.java
+A	src/main/java/com/sprint/project/findex/indexinfo/external/dto/StockMarketIndexRequest.java
+A	src/main/java/com/sprint/project/findex/indexinfo/external/dto/StockMarketIndexResponse.java
+
+[33mcommit de115acb71be918a80f0c74a7417415dd0b1da6e[m
+Merge: c3ab5d6 4402b6f
+Author: Nooroong <46676443+Nooroong@users.noreply.github.com>
+Date:   Fri Mar 13 16:09:47 2026 +0900
+
+    Merge pull request #31 from plzslp/feature/7-index-data-entity
+    
+    feat: 지수 데이터 엔티티 구현
+
+[33mcommit 4402b6f678d44db8f5c33220b58468806507d619[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Fri Mar 13 16:07:17 2026 +0900
+
+    chore: IndexData 파일 누락 추가
+    
+    --- 본문 ---
+    - 이전 커밋에 누락된 IndexData 파일 추가
+    
+    --- 꼬리말 ---
+    feet: #7
+
+M	src/main/java/com/sprint/project/findex/indexdata/entity/IndexData.java
+
+[33mcommit a49c34f42cea2ec59517339bb3511c788d2fdb13[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Fri Mar 13 16:01:52 2026 +0900
+
+    feat: 거래대금, 상장 시가 총액 타입 변경
+    
+    --- 본문 ---
+    - tradingPrice, marketTotalAmount의 타입을 Long에서 BigInteger로 변경
+    
+    --- 꼬리말 ---
+    fix: #7
+
+A	src/main/java/com/sprint/project/findex/indexinfo/entity/IndexInfo.java
+
+[33mcommit 66318a6479fac971b35dd105ad17fa7bac2c893f[m
+Author: plzslp <gyutann1171@gmail.com>
+Date:   Fri Mar 13 15:26:31 2026 +0900
+
+    feat: 지수 데이터 엔티티 구현
+    
+    --- 본문 ---
+    - 지수데이터/IndexData 엔티티 구현
+    - JPA 어노테이션 작성
+    - SourceType, DeletedStatus Enum 클래스 구현
+    - Findex.java: EnableJpaAuditing 어노테이션 추가
+    
+    --- 꼬리말 ---
+    feat: #7
+
+M	src/main/java/com/sprint/project/findex/Findex.java
+A	src/main/java/com/sprint/project/findex/global/entity/DeletedStatus.java
+A	src/main/java/com/sprint/project/findex/global/entity/SourceType.java
+A	src/main/java/com/sprint/project/findex/indexdata/entity/IndexData.java
+
+[33mcommit c3ab5d6bfe7e05a08cbbbb9b0ccba1363a5625b4[m[33m ([m[1;31mupstream/main[m[33m, [m[1;31mupstream/HEAD[m[33m)[m
+Author: Nooroong <sjiyeon759@gmail.com>
+Date:   Fri Mar 13 13:24:25 2026 +0900
+
+    chore: .env를 통한 application.yml 설정 추가
+    
+    --- 본문 (선택 사항, 상세 설명이 필요한 경우) ---
+    - application.yml에서 .env의 값을 가져와 사용하도록 했습니다.
+      - 관련 의존성도 추가하였습니다.
+    - 환경별로 설정 파일을 분리하였습니다.
+    - .env를 .gitignore에 추가하였습니다.
+    
+    --- 꼬리말 (선택 사항, 이슈 번호 연결) ---
+    fix: #이슈번호
+
+M	.gitignore
+M	build.gradle
+A	src/main/resources/application-local.yml
+A	src/main/resources/application-prod.yml
+M	src/main/resources/application.yml
+
+[33mcommit 86bb0a9998249b013d4d135e8809b0d2437a2d98[m
+Merge: 0fdf28f 260d85e
+Author: Nooroong <46676443+Nooroong@users.noreply.github.com>
+Date:   Fri Mar 13 11:11:40 2026 +0900
+
+    Merge pull request #29 from shong9124/main
+    
+    refactor: 프로젝트 패키지 구조 변경
+
+[33mcommit 260d85e3d87d11d1ce932d53c1c2364b8a328b83[m
+Author: shong9124 <shifty393@gmail.com>
+Date:   Fri Mar 13 10:14:01 2026 +0900
+
+    refactor: gradle의 group 수정
+    
+    --- 본문 ---
+    build.gradle의 group을 'com.sprint.project'로 수정함
+    
+    --- 꼬리말 ---
+    없음
+
+M	build.gradle
+
+[33mcommit 4445a09c8e2351a83a5f7df83d76c70aff046427[m
+Author: shong9124 <shifty393@gmail.com>
+Date:   Fri Mar 13 09:47:32 2026 +0900
+
+    refactor: 프로젝트 패키지 구조 변경
+    
+    --- 본문 ---
+    프로젝트 패키지 구조 변경
+    
+    --- 꼬리말 ---
+    없음
+
+M	README.md
+R075	src/main/java/Findex.java	src/main/java/com/sprint/project/findex/Findex.java
+
+[33mcommit d108dfc32080452cadf1a7781c584147f73be306[m
+Merge: e1e478d 0fdf28f
+Author: HaEun Kim <162269186+shong9124@users.noreply.github.com>
+Date:   Fri Mar 13 09:07:11 2026 +0900
+
+    Merge branch 'SB-Team1:main' into main
+
+[33mcommit 0fdf28f9c9131e9a7de831da23920708756ca9bf[m
+Author: jonas in dark <135942447+jonasInDark@users.noreply.github.com>
+Date:   Thu Mar 12 17:01:08 2026 +0900
+
+    Update 기능-구현-템플릿.md
+
+M	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+
+[33mcommit e1e478df6eb21cbd968993d37ce668a577907ed1[m
+Merge: 78b3451 5266612
+Author: shong9124 <shifty393@gmail.com>
+Date:   Thu Mar 12 16:58:55 2026 +0900
+
+    Merge branch 'main' of https://github.com/shong9124/sb10-findex-team01
+
+[33mcommit 78b345102d5d3bb8d586c91871c2be63e7c2c03f[m
+Author: shong9124 <shifty393@gmail.com>
+Date:   Thu Mar 12 16:44:34 2026 +0900
+
+    init commit
+
+A	.editorconfig
+A	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+A	.github/PULL_REQUEST_TEMPLATE.md
+A	.gitignore
+A	.gitmessage.txt
+A	.style/intellij-java-google-style.xml
+A	README.md
+A	build.gradle
+A	gradle/wrapper/gradle-wrapper.jar
+A	gradle/wrapper/gradle-wrapper.properties
+A	gradlew
+A	gradlew.bat
+A	setting.gradle
+A	src/main/java/Findex.java
+A	src/main/resources/application.yml
+
+[33mcommit 5266612f3991d6ac8943292f9b61cb8a812a1285[m[33m ([m[1;31morigin/feature[m[33m, [m[1;32mtemp[m[33m)[m
+Merge: 15deeea df90f01
+Author: HaEun Kim <162269186+shong9124@users.noreply.github.com>
+Date:   Thu Mar 12 16:24:16 2026 +0900
+
+    Merge pull request #1 from jonasInDark/main
+    
+    [feat] 공통 설정 공유
+
+[33mcommit df90f01ca484ed38136a00bfe33fa6e96906bac9[m
+Author: 8c8c8c8c8c8 <8c8c8c8c8c8@gmail.com>
+Date:   Thu Mar 12 00:16:50 2026 +0900
+
+    feat: 프로젝트 공통 설정
+    
+    --- 본문 ---
+    - build.gradle: 제가 사용하는 설정.
+    - .idea/codeStyles: java-google-style 적용. 따로 설정할 필요X.
+    - .gitmessage.txt: commit convention 예시. 자세한 건 readme 확인
+    - .github: issue, PR template 생성.
+
+A	.editorconfig
+M	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+A	.github/PULL_REQUEST_TEMPLATE.md
+A	.gitignore
+A	.gitmessage.txt
+A	.idea/codeStyles/Project.xml
+A	.idea/codeStyles/codeStyleConfig.xml
+A	.style/intellij-java-google-style.xml
+M	README.md
+A	build.gradle
+A	gradle/wrapper/gradle-wrapper.jar
+A	gradle/wrapper/gradle-wrapper.properties
+A	gradlew
+A	gradlew.bat
+A	setting.gradle
+A	src/main/java/Findex.java
+A	src/main/resources/application.yml
+
+[33mcommit 26296f628df3831a1640674237387ee11845963d[m
+Author: jonas in dark <135942447+jonasInDark@users.noreply.github.com>
+Date:   Wed Mar 11 20:36:41 2026 +0900
+
+    Update issue templates
+
+M	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+
+[33mcommit 235dfe162d64b2423e01a540a004a4cd72d7d827[m
+Author: jonas in dark <135942447+jonasInDark@users.noreply.github.com>
+Date:   Wed Mar 11 20:34:46 2026 +0900
+
+    Update issue templates
+
+M	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+
+[33mcommit f3990b22f01dd736c6922c8c59a7acee3a27da4d[m
+Author: jonas in dark <135942447+jonasInDark@users.noreply.github.com>
+Date:   Wed Mar 11 20:28:57 2026 +0900
+
+    init issue templates
+
+A	".github/ISSUE_TEMPLATE/\352\270\260\353\212\245-\352\265\254\355\230\204-\355\205\234\355\224\214\353\246\277.md"
+
+[33mcommit 15deeeab5ec0d39495ba3f69baf8a76c476b1efe[m
+Author: jonas in dark <135942447+jonasInDark@users.noreply.github.com>
+Date:   Wed Mar 11 18:27:59 2026 +0900
+
+    Create README.md
+
+A	README.md
