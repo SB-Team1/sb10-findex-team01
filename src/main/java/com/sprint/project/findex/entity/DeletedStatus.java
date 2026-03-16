@@ -1,4 +1,4 @@
-package com.sprint.project.findex.global.entity;
+package com.sprint.project.findex.entity;
 
 public enum DeletedStatus {
   ACTIVE,
