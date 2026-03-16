@@ -1,6 +1,6 @@
 package com.sprint.project.findex.entity;
 
-import com.sprint.project.findex.dto.IndexInfoDto;
+import com.sprint.project.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.sprint.project.findex.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,7 +64,11 @@ public class IndexInfo extends BaseEntity {
     this.isDeleted = isDeleted;
   }
 
-  // todo
-  public void update(IndexInfoDto dto) {
+  public void update(IndexInfoUpdateRequest request) {
+    updateIfChanged(employedItemsCount, request.employedItemsCount(),
+        val -> employedItemsCount = val);
+    updateIfChanged(basePointInTime, request.basePointInTime(), val -> basePointInTime = val);
+    updateIfChanged(baseIndex, request.baseIndex(), val -> baseIndex = val);
+    updateIfChanged(favorite, request.favorite(), val -> favorite = val);
   }
 }
