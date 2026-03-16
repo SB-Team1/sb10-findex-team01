@@ -2,6 +2,7 @@ package com.sprint.project.findex.service;
 
 import com.sprint.project.findex.dto.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.IndexDataDto;
+import com.sprint.project.findex.dto.IndexDataUpdateRequest;
 import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
@@ -50,6 +51,28 @@ public class IndexDataService {
 
     return indexDataMapper.toDto(indexData);
   }
+
+  //todo OPEN API 이용한 자동 등록 (기존 데이터가 없을 때 등록)
+
+  public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
+    IndexData indexData = indexDataRepository.findById(id)
+        .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
+    indexData.updateMarketPrice(request.marketPrice());
+    indexData.updateClosingPrice(request.closingPrice());
+    indexData.updateHighPrice(request.highPrice());
+    indexData.updateLowPrice(request.lowPrice());
+    indexData.updateVersus(request.versus());
+    indexData.updateFluctuationRate(request.fluctuationRate());
+    indexData.updateTradingQuantity(request.tradingQuantity());
+    indexData.updateTradingPrice(request.tradingPrice());
+    indexData.updateMarketTotalAmount(request.marketTotalAmount());
+
+    indexData.updateSourceTypeToUser(); // 소스타입 사용자로 변경
+
+    return indexDataMapper.toDto(indexData);
+  }
+
+  //todo OPEN API 이용한 자동 수정 (기존 데이터가 있다면 데이터 확인 후 수정)
 
   private void validateDuplicateData(IndexDataCreateRequest request, IndexInfo indexInfo) {
     boolean exists = indexDataRepository.existsByIndexInfoAndBaseDateAndIsDeleted(indexInfo,

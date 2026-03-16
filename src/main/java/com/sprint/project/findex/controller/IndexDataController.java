@@ -2,6 +2,7 @@ package com.sprint.project.findex.controller;
 
 import com.sprint.project.findex.dto.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.IndexDataDto;
+import com.sprint.project.findex.dto.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,17 +34,28 @@ public class IndexDataController {
   @PostMapping
   @Operation(summary = "지수 데이터 등록")
   public ResponseEntity<IndexDataDto> create(
-      @Valid @RequestBody IndexDataCreateRequest request) {
-    IndexDataDto indexDataDto = indexDataService.createByUser(request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(indexDataDto);
+      @Valid @RequestBody IndexDataCreateRequest request
+  ) {
+    IndexDataDto dto = indexDataService.createByUser(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
 
-  @GetMapping(value = "/performance/favorite")
-  public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance(
-      @RequestParam("periodType") String periodType
+  @PatchMapping("/{id}")
+  @Operation(summary = "지수 데이터 수정")
+  public ResponseEntity<IndexDataDto> update(
+      @PathVariable Long id,
+      @Valid @RequestBody IndexDataUpdateRequest request
   ) {
-    List<IndexPerformanceDto> dto = dashboardService.findFavoriteIndexPerformance(periodType);
-
+    IndexDataDto dto = indexDataService.update(id, request);
     return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
-}
+
+    @GetMapping(value = "/performance/favorite")
+    public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance (
+        @RequestParam("periodType") String periodType
+  ){
+      List<IndexPerformanceDto> dto = dashboardService.findFavoriteIndexPerformance(periodType);
+
+      return ResponseEntity.status(HttpStatus.OK).body(dto);
+    }
+  }
