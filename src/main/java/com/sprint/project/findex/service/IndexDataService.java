@@ -26,6 +26,7 @@ public class IndexDataService {
 
   public IndexDataDto createByUser(IndexDataCreateRequest request) {
 
+    //todo 임시로 findById를 호출하고 있음, 추후 Soft Delete 로직 적용 시 달라질 수 있음
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
         .orElseThrow(() -> new NoSuchElementException("지수 정보를 찾을 수 없습니다."));
 
@@ -52,10 +53,8 @@ public class IndexDataService {
     return indexDataMapper.toDto(indexData);
   }
 
-  //todo OPEN API 이용한 자동 등록 (기존 데이터가 없을 때 등록)
-
   public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
-    IndexData indexData = indexDataRepository.findById(id)
+    IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
         .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
     indexData.updateMarketPrice(request.marketPrice());
     indexData.updateClosingPrice(request.closingPrice());
@@ -72,7 +71,11 @@ public class IndexDataService {
     return indexDataMapper.toDto(indexData);
   }
 
-  //todo OPEN API 이용한 자동 수정 (기존 데이터가 있다면 데이터 확인 후 수정)
+  public void delete(Long id) {
+    IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
+        .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
+    indexData.updateIsDeleted(DeletedStatus.DELETED);
+  }
 
   private void validateDuplicateData(IndexDataCreateRequest request, IndexInfo indexInfo) {
     boolean exists = indexDataRepository.existsByIndexInfoAndBaseDateAndIsDeleted(indexInfo,
