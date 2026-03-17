@@ -10,10 +10,12 @@ import com.sprint.project.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/index-data")
 @Tag(name = "지수 데이터 API")
+@Validated
 public class IndexDataController {
 
   private final IndexDataService indexDataService;
@@ -76,7 +79,8 @@ public class IndexDataController {
   public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
       @RequestParam(value = "indexInfoId", required = false) Long indexInfoId,
       @RequestParam("periodType") String periodType,
-      @RequestParam(value = "limit", defaultValue = "10") int limit
+      @RequestParam(value = "limit", defaultValue = "10")
+      @Min(value = 1, message = "limit은 1 이상이어야 합니다.") int limit
   ) {
     List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
         indexInfoId,

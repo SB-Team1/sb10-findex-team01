@@ -35,10 +35,6 @@ public class DashboardService {
       String periodType,
       int limit
   ) {
-    // 0 또는 음수 값이 들어왔을 경우 대비
-    if (limit <= 0) {
-      limit = 10;
-    }
 
     LocalDate today = LocalDate.now();
     LocalDate compareDate = calculateTargetDate(today, periodType);
@@ -50,9 +46,7 @@ public class DashboardService {
 
     List<IndexPerformanceDto> sortedPerformances = queryResult.stream()
         .map(DashboardMapper::toIndexPerformanceDto)
-        // 등락률 비교
         .sorted((a, b) -> Double.compare(b.fluctuationRate(), a.fluctuationRate()))
-        // 몇 개까지 표시할 건지 (default = 10)
         .limit(limit)
         .toList();
 
