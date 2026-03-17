@@ -3,6 +3,7 @@ package com.sprint.project.findex.controller;
 import com.sprint.project.findex.dto.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.IndexDataDto;
 import com.sprint.project.findex.dto.IndexDataUpdateRequest;
+import com.sprint.project.findex.dto.dashboard.IndexChartDto;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankingRequest;
@@ -81,12 +82,19 @@ public class IndexDataController {
   public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
       @Valid @ModelAttribute RankingRequest request
   ) {
-    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
-        request.indexInfoId(),
-        request.periodType(),
-        request.limitOrDefault()
-    );
+    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(request);
 
     return ResponseEntity.status(HttpStatus.OK).body(dtos);
+  }
+
+  @GetMapping(value = "/{id}/chart")
+  @Operation(summary = "지수 차트 조회")
+  public ResponseEntity<IndexChartDto> getIndexChart(
+      @PathVariable Long id,
+      @RequestParam("periodType") String periodType
+  ) {
+    IndexChartDto dto = dashboardService.findIndexChart(id, periodType);
+
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
   }
 }
