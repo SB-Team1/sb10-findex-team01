@@ -2,6 +2,7 @@ package com.sprint.project.findex.service;
 
 import com.sprint.project.findex.dto.dashboard.DashboardQueryDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
+import com.sprint.project.findex.dto.dashboard.RankingRequest;
 import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.mapper.DashboardMapper;
@@ -30,24 +31,20 @@ public class DashboardService {
         .toList();
   }
 
-  public List<RankedIndexPerformanceDto> findIndexRanking(
-      Long indexInfoId,
-      String periodType,
-      int limit
-  ) {
+  public List<RankedIndexPerformanceDto> findIndexRanking(RankingRequest request) {
 
     LocalDate today = LocalDate.now();
-    LocalDate compareDate = calculateTargetDate(today, periodType);
+    LocalDate compareDate = calculateTargetDate(today, request.periodType());
 
     // indexInfoId값이 null이면 지수 전체 조회
-    List<DashboardQueryDto> queryResult = (indexInfoId == null)
+    List<DashboardQueryDto> queryResult = (request.indexInfoId() == null)
         ? dashboardRepository.findAllIndexRanking(today, compareDate, DeletedStatus.ACTIVE)
-        : dashboardRepository.findIndexRankingByIndexInfoId(indexInfoId, today, compareDate, DeletedStatus.ACTIVE);
+        : dashboardRepository.findIndexRankingByIndexInfoId(request.indexInfoId(), today, compareDate, DeletedStatus.ACTIVE);
 
     List<IndexPerformanceDto> sortedPerformances = queryResult.stream()
         .map(DashboardMapper::toIndexPerformanceDto)
         .sorted((a, b) -> Double.compare(b.fluctuationRate(), a.fluctuationRate()))
-        .limit(limit)
+        .limit(request.limitOrDefault())
         .toList();
 
     List<RankedIndexPerformanceDto> rankedResult = new ArrayList<>();
