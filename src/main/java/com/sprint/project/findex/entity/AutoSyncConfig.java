@@ -1,6 +1,5 @@
 package com.sprint.project.findex.entity;
 
-import com.sprint.project.findex.IndexInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
