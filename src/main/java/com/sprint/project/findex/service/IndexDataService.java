@@ -60,17 +60,7 @@ public class IndexDataService {
   public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
         .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
-    indexData.updateMarketPrice(request.marketPrice());
-    indexData.updateClosingPrice(request.closingPrice());
-    indexData.updateHighPrice(request.highPrice());
-    indexData.updateLowPrice(request.lowPrice());
-    indexData.updateVersus(request.versus());
-    indexData.updateFluctuationRate(request.fluctuationRate());
-    indexData.updateTradingQuantity(request.tradingQuantity());
-    indexData.updateTradingPrice(request.tradingPrice());
-    indexData.updateMarketTotalAmount(request.marketTotalAmount());
-
-    indexData.updateSourceTypeToUser(); // 소스타입 사용자로 변경
+    indexData.update(request);
 
     return indexDataMapper.toDto(indexData);
   }
@@ -91,7 +81,7 @@ public class IndexDataService {
 
     if (!content.isEmpty()) {
       IndexData lastValue = content.get(content.size() - 1);
-      nextCursor = mapCursorToString(lastValue, request.sortField());
+      nextCursor = request.sortField().extractValueToString(lastValue);
       nextIdAfter = lastValue.getId();
     }
 
@@ -115,20 +105,5 @@ public class IndexDataService {
     if (exists) {
       throw new IllegalArgumentException("이미 존재하는 지수 데이터 입니다.");
     }
-  }
-
-  private String mapCursorToString(IndexData lastValue, String sortField) {
-    return switch (sortField) {
-      case "marketPrice" -> String.valueOf(lastValue.getMarketPrice());
-      case "closingPrice" -> String.valueOf(lastValue.getClosingPrice());
-      case "highPrice" -> String.valueOf(lastValue.getHighPrice());
-      case "lowPrice" -> String.valueOf(lastValue.getLowPrice());
-      case "versus" -> String.valueOf(lastValue.getVersus());
-      case "fluctuationRate" -> String.valueOf(lastValue.getFluctuationRate());
-      case "tradingQuantity" -> String.valueOf(lastValue.getTradingQuantity());
-      case "tradingPrice" -> String.valueOf(lastValue.getTradingPrice());
-      case "marketTotalAmount" -> String.valueOf(lastValue.getMarketTotalAmount());
-      default -> String.valueOf(lastValue.getBaseDate());
-    };
   }
 }

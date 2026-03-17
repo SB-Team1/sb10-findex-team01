@@ -1,5 +1,6 @@
 package com.sprint.project.findex.entity;
 
+import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.project.findex.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -100,47 +101,20 @@ public class IndexData extends BaseEntity {
     this.isDeleted = isDeleted;
   }
 
-  public void updateSourceTypeToUser() {
+  public void update(IndexDataUpdateRequest request) {
+    updateIfChanged(this.marketPrice, request.marketPrice(), val -> this.marketPrice = val);
+    updateIfChanged(this.closingPrice, request.closingPrice(), val -> this.closingPrice = val);
+    updateIfChanged(this.highPrice, request.highPrice(), val -> this.highPrice = val);
+    updateIfChanged(this.lowPrice, request.lowPrice(), val -> this.lowPrice = val);
+    updateIfChanged(this.versus, request.versus(), val -> this.versus = val);
+    updateIfChanged(this.fluctuationRate, request.fluctuationRate(), val -> this.fluctuationRate = val);
+    updateIfChanged(this.tradingQuantity, request.tradingQuantity(), val -> this.tradingQuantity = val);
+    updateIfChanged(this.tradingPrice, request.tradingPrice(), val -> this.tradingPrice = val);
+    updateIfChanged(this.marketTotalAmount, request.marketTotalAmount(), val -> this.marketTotalAmount = val);
     this.sourceType = SourceType.USER;
   }
 
-  public void updateMarketPrice(Double marketPrice) {
-    updateIfChanged(this.marketPrice, marketPrice, val -> this.marketPrice = val);
-  }
-
-  public void updateClosingPrice(Double closingPrice) {
-    updateIfChanged(this.closingPrice, closingPrice, val -> this.closingPrice = val);
-  }
-
-  public void updateHighPrice(Double highPrice) {
-    updateIfChanged(this.highPrice, highPrice, val -> this.highPrice = val);
-  }
-
-  public void updateLowPrice(Double lowPrice) {
-    updateIfChanged(this.lowPrice, lowPrice, val -> this.lowPrice = val);
-  }
-
-  public void updateVersus(Double versus) {
-    updateIfChanged(this.versus, versus, val -> this.versus = val);
-  }
-
-  public void updateFluctuationRate(Double fluctuationRate) {
-    updateIfChanged(this.fluctuationRate, fluctuationRate, val -> this.fluctuationRate = val);
-  }
-
-  public void updateTradingQuantity(Long tradingQuantity) {
-    updateIfChanged(this.tradingQuantity, tradingQuantity, val -> this.tradingQuantity = val);
-  }
-
-  public void updateTradingPrice(BigInteger tradingPrice) {
-    updateIfChanged(this.tradingPrice, tradingPrice, val -> this.tradingPrice = val);
-  }
-
-  public void updateMarketTotalAmount(BigInteger marketTotalAmount) {
-    updateIfChanged(this.marketTotalAmount, marketTotalAmount, val -> this.marketTotalAmount = val);
-  }
-
   public void updateIsDeleted(DeletedStatus isDeleted) {
-    updateIfChanged(this.isDeleted, isDeleted, val -> this.isDeleted = val);
+    this.isDeleted = isDeleted;
   }
 }

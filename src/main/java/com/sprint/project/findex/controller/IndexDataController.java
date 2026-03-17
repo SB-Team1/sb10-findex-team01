@@ -92,11 +92,7 @@ public class IndexDataController {
   public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
       @Valid @ModelAttribute RankingRequest request
   ) {
-    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
-        request.indexInfoId(),
-        request.periodType(),
-        request.limitOrDefault()
-    );
+    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(request);
 
     return ResponseEntity.status(HttpStatus.OK).body(dtos);
   }

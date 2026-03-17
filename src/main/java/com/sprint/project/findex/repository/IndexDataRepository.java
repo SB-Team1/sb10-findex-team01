@@ -5,14 +5,11 @@ import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import java.time.LocalDate;
 import java.util.Optional;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IndexDataRepository extends JpaRepository<IndexData, Long>, IndexDataRepositoryCustom {
+public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
+    IndexDataQDSLRepository {
   boolean existsByIndexInfoAndBaseDateAndIsDeleted(IndexInfo indexInfo, LocalDate baseDate, DeletedStatus deletedStatus);
 
   Optional<IndexData> findByIdAndIsDeleted(Long id, DeletedStatus isDeleted);
-
-  Slice<IndexData> findAllById(Long id, Pageable pageable);
 }
