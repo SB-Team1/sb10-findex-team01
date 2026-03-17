@@ -1,14 +1,21 @@
-package com.sprint.project.findex.dto;
+package com.sprint.project.findex.dto.indexdata;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigInteger;
+import java.time.LocalDate;
 
-@Schema(description = "지수 데이터 수정 요청")
-public record IndexDataUpdateRequest(
+@Schema(description = "지수 데이터 생성 요청")
+public record IndexDataCreateRequest(
     //todo @Postive 같은 제약 조건은 임의로 넣어둔 상태임
+    @NotNull
+    @Schema(description = "지수 정보 ID", example = "1")
+    Long indexInfoId,
+    @NotNull
+    @Schema(description = "기준 일자", example = "2023-01-01")
+    LocalDate baseDate,
     @Positive
     @NotNull
     @Schema(description = "시가", example = "2800.25")

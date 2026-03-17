@@ -5,7 +5,7 @@ CREATE TABLE index_infos
   updated_at           timestamptz           NOT NULL,
   index_classification VARCHAR(240)          NOT NULL,
   index_name           VARCHAR(240)          NOT NULL,
-  employed_items_count bigint                NOT NULL, -- type changed int to bigint
+  employed_items_count bigint                NOT NULL,
   base_point_in_time   date                  NOT NULL,
   base_index           DOUBLE PRECISION      NOT NULL,
   source_type          VARCHAR(10)           NOT NULL CHECK (source_type IN ('USER', 'OPEN_API')),

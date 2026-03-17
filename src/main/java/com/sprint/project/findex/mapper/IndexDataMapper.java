@@ -1,6 +1,6 @@
 package com.sprint.project.findex.mapper;
 
-import com.sprint.project.findex.dto.IndexDataDto;
+import com.sprint.project.findex.dto.indexdata.IndexDataDto;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse.StockIndexDto;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.mapper.config.GlobalMapperConfig;

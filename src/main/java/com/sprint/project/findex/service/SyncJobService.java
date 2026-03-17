@@ -1,203 +1,127 @@
 package com.sprint.project.findex.service;
 
 import com.sprint.project.findex.dto.SyncJobDto;
-import com.sprint.project.findex.dto.syncjob.IndexDataSyncRequest;
-import com.sprint.project.findex.entity.DeletedStatus;
-import com.sprint.project.findex.entity.IndexData;
+import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse;
+import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse.StockIndexDto;
 import com.sprint.project.findex.entity.IndexInfo;
-import com.sprint.project.findex.entity.SourceType;
 import com.sprint.project.findex.entity.SyncJob;
-import com.sprint.project.findex.global.entity.JobType;
-import com.sprint.project.findex.global.entity.ResultType;
 import com.sprint.project.findex.global.exception.BusinessLogicException;
 import com.sprint.project.findex.global.exception.ExceptionCode;
-import com.sprint.project.findex.indexinfo.external.dto.StockMarketIndexAPIResponse;
-import com.sprint.project.findex.indexinfo.external.dto.StockMarketIndexAPIResponse.IndexDto;
 import com.sprint.project.findex.mapper.SyncJobMapper;
-import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
-import com.sprint.project.findex.repository.SyncJobRepository;
+import com.sprint.project.findex.service.openapi.internal.PersistentWorker;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class SyncJobService {
 
   private final IndexInfoRepository indexInfoRepository;
-  private final IndexDataRepository indexDataRepository;
-  private final SyncJobRepository syncJobRepository;
-  private final WebClient webClient;
-
   private final SyncJobMapper syncJobMapper;
+  private final PersistentWorker worker;
 
-  @Value("${LOCAL_INDEX_API_KEY}")
-  private String apiKey;
+  @Qualifier("openapi")
+  private final WebClient openapi;
 
-  // DB에 저장된 지수 정보를 바탕으로 실제 값을 Open API로부터 조회하고 기록합니다.
+
+  // 가장 최신의 지수 정보를 로드해 저장합니다.
   public List<SyncJobDto> syncIndexInfos(HttpServletRequest request) {
-    // DB로부터 지수 정보를 불러온다.
-    List<IndexInfo> indexInfos = indexInfoRepository.findAll();
 
-    List<SyncJobDto> syncJobDtos = new ArrayList<>(); // 컨트롤러 응답
+    List<SyncJob> response = new ArrayList<>();
     String requestIpAddr = request.getRemoteAddr();
+    LocalDate baseDate = getLastWeekday();
 
-    // 모든 지수 정보에 대해 작업을 반복한다.
-    for (IndexInfo indexInfo : indexInfos) {
-      // 지수 정보 가져오기.
+    // DB에서 지수 정보 전체를 map으로 미리 불러오기 (key는 unique 체크)
+    Map<String, IndexInfo> indexInfoMap = indexInfoRepository.findAll()
+        .stream()
+        .collect(Collectors.toMap(
+            idxInfo -> idxInfo.getIndexClassification() + "_" + idxInfo.getIndexName(),
+            Function.identity()
+        ));
 
-      ResultType resultType = ResultType.FAIL;
+    int pageNo = 1;
 
-      try {
-        // todo: 아래의 WebClient 코드는 임의로 작성함. 나중에 분리 및 교체할 예정.
-        StockMarketIndexAPIResponse apiResponse = webClient.get()
-            .uri(urlBuilder -> urlBuilder
-                .queryParam("serviceKey", apiKey)
-                .queryParam("resultType", "json")
-                .queryParam("idxNm", indexInfo.getIndexName())
-                .queryParam("beginEpyItmsCnt", indexInfo.getEmployedItemsCount())
-                .queryParam("basDt",
-                    indexInfo.getBasePointInTime().format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                .build()
-            )
-            .retrieve() // response body를 추출
-            .bodyToMono(StockMarketIndexAPIResponse.class)
-            .block(Duration.ofSeconds(5));
+    while (true) {
+      StockMarketIndexResponse openApiResponse = fetchToOpenApi(pageNo, baseDate);
 
-        // 지수 데이터 갱신
-        if (apiResponse.response().header().resultCode().equals("00")
-            && !apiResponse.response().bodyDto().items().item()
-            .isEmpty()) {
-          indexInfo.updateByOpenAPI(apiResponse.response().bodyDto().items().item().get(0)); // 갱신
-          resultType = ResultType.SUCCESS;
-        }
-      } catch (Exception e) {
-        new BusinessLogicException(ExceptionCode.OPEN_API_REQUEST_FAILED, e.getMessage());
-      } finally {
-        // SyncJob 히스토리 등록
-        SyncJob syncJob = new SyncJob(indexInfo, JobType.INDEX_INFO, null, requestIpAddr,
-            resultType);
-        syncJobRepository.save(syncJob);
-
-        syncJobDtos.add(syncJobMapper.toDto(syncJob));
-      }
-    }
-
-    return syncJobDtos;
-  }
-
-  // 지수를 선택적으로 지정할 수 있다 -> 1개 이상의 지수 데이터를 조건으로 걸 수 있음
-  public List<SyncJobDto> syncIndexData(IndexDataSyncRequest indexDataSyncRequest,
-      HttpServletRequest request) {
-    List<SyncJobDto> syncJobDtos = new ArrayList<>();
-    List<IndexInfo> indexInfos = indexInfoRepository.findByIdIn(
-        indexDataSyncRequest.indexInfoIds());
-    String requestIpAddr = request.getRemoteAddr();
-
-    // 지수 정보를 바탕으로 Open API로부터 지수 데이터를 가져온다.
-    for (IndexInfo indexInfo : indexInfos) {
-      LocalDate targetDate = indexDataSyncRequest.baseDateFrom();
-
-      while (!targetDate.isAfter(indexDataSyncRequest.baseDateTo())) {
-
-        SyncJob syncJob = null;
-        LocalDate finalTargetDate = targetDate;
-
-        try {
-          // 지수명, 기준일자를 바탕으로 지수 데이터 요청
-          StockMarketIndexAPIResponse apiResponse = getOpenApiIndexData(indexInfo.getIndexName(),
-              targetDate);
-
-          // 응답 받은 지수 데이터를 이용해 갱신
-          if (!apiResponse.response().header().resultCode().equals("00")) {
-            // SyncJob 히스토리 기록(실패)
-            syncJob = syncJobRepository.save(
-                new SyncJob(indexInfo, JobType.INDEX_DATA, targetDate, requestIpAddr,
-                    ResultType.SUCCESS));
-          } else if (!apiResponse.response().bodyDto().items().item().isEmpty()) {
-
-            // 현재 지수 정보에 대해 DB에 저장된 지수 데이터
-            Optional<IndexData> currentIndexData = indexDataRepository.findByIndexInfoAndBaseDateAndIsDeleted(
-                indexInfo, targetDate, DeletedStatus.ACTIVE);
-
-            // update or insert
-            IndexDto indexDto = apiResponse.response().bodyDto().items().item().get(0);
-            currentIndexData.ifPresentOrElse(
-                curIndexData -> {
-                  curIndexData.updateMarketPrice(indexDto.marketPrice());
-                  curIndexData.updateClosingPrice(indexDto.closingPrice());
-                  curIndexData.updateHighPrice(indexDto.highPrice());
-                  curIndexData.updateLowPrice(indexDto.lowPrice());
-                  curIndexData.updateVersus(indexDto.versus());
-                  curIndexData.updateFluctuationRate(indexDto.fluctuationRate());
-                  curIndexData.updateTradingPrice(indexDto.tradingPrice());
-                  curIndexData.updateMarketTotalAmount(indexDto.marketTotalAmount());
-                },
-                () -> indexDataRepository.save(
-                    IndexData.builder()
-                        .indexInfo(indexInfo)
-                        .baseDate(finalTargetDate)
-                        .sourceType(SourceType.OPEN_API)
-                        .marketPrice(indexDto.marketPrice())
-                        .closingPrice(indexDto.closingPrice())
-                        .highPrice(indexDto.highPrice())
-                        .lowPrice(indexDto.lowPrice())
-                        .versus(indexDto.versus())
-                        .fluctuationRate(indexDto.fluctuationRate())
-                        .tradingPrice(indexDto.tradingPrice())
-                        .marketTotalAmount(indexDto.marketTotalAmount())
-                        .isDeleted(DeletedStatus.ACTIVE)
-                        .build()
-                )
-            );
-
-            // SyncJob 히스토리 기록(성공)
-            syncJob = syncJobRepository.save(
-                new SyncJob(indexInfo, JobType.INDEX_DATA, targetDate, requestIpAddr,
-                    ResultType.SUCCESS));
-          }
-        } catch (Exception e) {
-          // SyncJob 히스토리 기록(실패)
-          syncJob = syncJobRepository.save(
-              new SyncJob(indexInfo, JobType.INDEX_DATA, targetDate, requestIpAddr,
-                  ResultType.SUCCESS));
-        } finally {
-          if (syncJob != null) {
-            syncJobDtos.add(syncJobMapper.toDto(syncJob));
-          }
-
-          targetDate = targetDate.plusDays(1);
-        }
+      List<StockIndexDto> stockIndexDtoList = extractDtoListFromResponse(openApiResponse);
+      if (stockIndexDtoList == null || stockIndexDtoList.isEmpty()) {
+        break;
       }
 
+      // worker 이용하여 IndexInfo와 SyncJob를 한 트랜잭션 내에서 함께 저장
+      response.addAll(
+          worker.saveIndexInfoAndSyncJob(stockIndexDtoList, indexInfoMap, requestIpAddr)
+      );
+
+      pageNo++;
     }
 
-    return syncJobDtos;
+    return response.stream()
+        .map(syncJobMapper::toDto)
+        .toList();
   }
 
-  private StockMarketIndexAPIResponse getOpenApiIndexData(String indexName, LocalDate targetDate) {
-    return webClient.get()
-        .uri(urlBuilder -> urlBuilder
-            .queryParam("serviceKey", apiKey)
-            .queryParam("resultType", "json")
-            .queryParam("idxNm", indexName)
-            .queryParam("basDt",
-                targetDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-            .build()
-        )
-        .retrieve()
-        .bodyToMono(StockMarketIndexAPIResponse.class)
-        .block(Duration.ofSeconds(5));
+  private StockMarketIndexResponse fetchToOpenApi(int pageNo, LocalDate baseDate) {
+    try {
+      return openapi.get()
+          .uri(uriBuilder -> uriBuilder
+              .queryParam("pageNo", pageNo)
+              .queryParam("numOfRows", 50)
+              .queryParam("basDt", baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+              .build()
+          )
+          .retrieve()
+          .bodyToMono(StockMarketIndexResponse.class)
+          .block(Duration.ofSeconds(5));
+
+    } catch (Exception e) {
+      throw new BusinessLogicException(ExceptionCode.OPEN_API_REQUEST_FAILED, e.getMessage());
+    }
+  }
+
+  private List<StockIndexDto> extractDtoListFromResponse(StockMarketIndexResponse response) {
+    // 응답 형태가 맞지 않은 경우
+    if (response == null ||
+        response.response() == null ||
+        response.response().body() == null ||
+        response.response().body().items() == null ||
+        response.response().body().items().item() == null) {
+      return null;
+    }
+
+    // 에러코드가 온 경우
+    if (!response.response().header().resultCode().equals("00")) {
+      return null;
+    }
+
+    return response.response().body().items().item();
+  }
+
+  // 오늘 이전의 가장 마지막 평일 구하기
+  private LocalDate getLastWeekday() {
+    LocalDate yesterday = LocalDate.now().minusDays(1);
+
+    LocalDate lastWeekday = yesterday;
+    if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY) {
+      lastWeekday = yesterday.minusDays(1);
+    } else if (yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
+      lastWeekday = yesterday.minusDays(2);
+    }
+
+    return lastWeekday;
   }
 }

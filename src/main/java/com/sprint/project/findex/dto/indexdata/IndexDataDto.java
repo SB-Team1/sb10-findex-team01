@@ -1,4 +1,4 @@
-package com.sprint.project.findex.dto;
+package com.sprint.project.findex.dto.indexdata;
 
 import com.sprint.project.findex.entity.SourceType;
 import io.swagger.v3.oas.annotations.media.Schema;

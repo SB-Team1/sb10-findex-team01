@@ -1,15 +1,14 @@
 package com.sprint.project.findex.entity;
 
 import com.sprint.project.findex.dto.IndexInfoDto;
+import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse;
 import com.sprint.project.findex.entity.base.BaseEntity;
-import com.sprint.project.findex.indexinfo.external.dto.StockMarketIndexAPIResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -70,12 +69,12 @@ public class IndexInfo extends BaseEntity {
   public void update(IndexInfoDto dto) {
   }
 
-  public void updateByOpenAPI(StockMarketIndexAPIResponse.IndexDto indexDto) {
-    this.indexClassification = indexDto.indexClassification();
-    this.indexName = indexDto.indexName();
-    this.employedItemsCount = indexDto.employedItemsCount(); // todo: 타입이 다른데 짤릴 것 같음(Long to Integer)
-    this.basePointInTime = LocalDate.parse(indexDto.basePointInTime(),
-        DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+  public void updateByOpenAPI(StockMarketIndexResponse.StockIndexDto stockIndexDto) {
+    this.indexClassification = stockIndexDto.indexClassification();
+    this.indexName = stockIndexDto.indexName();
+    this.employedItemsCount = stockIndexDto.employedItemsCount();
+    this.basePointInTime = stockIndexDto.basePointInTime();
     this.sourceType = SourceType.OPEN_API;
   }
 

@@ -1,8 +1,10 @@
 package com.sprint.project.findex.controller;
 
-import com.sprint.project.findex.dto.IndexDataCreateRequest;
-import com.sprint.project.findex.dto.IndexDataDto;
-import com.sprint.project.findex.dto.IndexDataUpdateRequest;
+import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
+import com.sprint.project.findex.dto.indexdata.CursorPageResponseIndexDataDto;
+import com.sprint.project.findex.dto.indexdata.IndexDataCreateRequest;
+import com.sprint.project.findex.dto.indexdata.IndexDataDto;
+import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankingRequest;
@@ -66,6 +68,15 @@ public class IndexDataController {
     return ResponseEntity.noContent().build();
   }
 
+  @GetMapping
+  @Operation(summary = "지수 데이터 목록 조회")
+  public ResponseEntity<CursorPageResponseIndexDataDto> findAll(
+      @Valid @ModelAttribute CursorPageIndexDataRequest request
+  ) {
+    CursorPageResponseIndexDataDto dto = indexDataService.findAll(request);
+    return ResponseEntity.status(HttpStatus.OK).body(dto);
+  }
+
   @GetMapping(value = "/performance/favorite")
   @Operation(summary = "주요 지수 현황 조회")
   public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance (
@@ -81,11 +92,7 @@ public class IndexDataController {
   public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
       @Valid @ModelAttribute RankingRequest request
   ) {
-    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
-        request.indexInfoId(),
-        request.periodType(),
-        request.limitOrDefault()
-    );
+    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(request);
 
     return ResponseEntity.status(HttpStatus.OK).body(dtos);
   }

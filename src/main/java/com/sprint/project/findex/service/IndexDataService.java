@@ -1,8 +1,10 @@
 package com.sprint.project.findex.service;
 
-import com.sprint.project.findex.dto.IndexDataCreateRequest;
-import com.sprint.project.findex.dto.IndexDataDto;
-import com.sprint.project.findex.dto.IndexDataUpdateRequest;
+import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
+import com.sprint.project.findex.dto.indexdata.CursorPageResponseIndexDataDto;
+import com.sprint.project.findex.dto.indexdata.IndexDataCreateRequest;
+import com.sprint.project.findex.dto.indexdata.IndexDataDto;
+import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
@@ -10,8 +12,10 @@ import com.sprint.project.findex.entity.SourceType;
 import com.sprint.project.findex.mapper.IndexDataMapper;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
+import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,17 +60,7 @@ public class IndexDataService {
   public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
         .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
-    indexData.updateMarketPrice(request.marketPrice());
-    indexData.updateClosingPrice(request.closingPrice());
-    indexData.updateHighPrice(request.highPrice());
-    indexData.updateLowPrice(request.lowPrice());
-    indexData.updateVersus(request.versus());
-    indexData.updateFluctuationRate(request.fluctuationRate());
-    indexData.updateTradingQuantity(request.tradingQuantity());
-    indexData.updateTradingPrice(request.tradingPrice());
-    indexData.updateMarketTotalAmount(request.marketTotalAmount());
-
-    indexData.updateSourceTypeToUser(); // 소스타입 사용자로 변경
+    indexData.update(request);
 
     return indexDataMapper.toDto(indexData);
   }
@@ -77,6 +71,36 @@ public class IndexDataService {
     indexData.updateIsDeleted(DeletedStatus.DELETED);
   }
 
+  public CursorPageResponseIndexDataDto findAll(CursorPageIndexDataRequest request) {
+    Slice<IndexData> slice = indexDataRepository.findCursorPage(request);
+    List<IndexData> content = slice.getContent();
+
+    String nextCursor = null;
+    Long nextIdAfter = null;
+    boolean hasNext = slice.hasNext();
+
+    if (!content.isEmpty()) {
+      IndexData lastValue = content.get(content.size() - 1);
+      nextCursor = request.sortField().extractValueToString(lastValue);
+      nextIdAfter = lastValue.getId();
+    }
+
+    List<IndexDataDto> indexDataDtoList = content.stream()
+        .map(indexDataMapper::toDto)
+        .toList();
+
+    Long totalElements = indexDataRepository.countByRequest(request);
+
+    return new CursorPageResponseIndexDataDto(
+        indexDataDtoList,
+        nextCursor,
+        nextIdAfter,
+        indexDataDtoList.size(),
+        totalElements,
+        hasNext
+    );
+  }
+
   private void validateDuplicateData(IndexDataCreateRequest request, IndexInfo indexInfo) {
     boolean exists = indexDataRepository.existsByIndexInfoAndBaseDateAndIsDeleted(indexInfo,
         request.baseDate(), DeletedStatus.ACTIVE);
@@ -84,5 +108,4 @@ public class IndexDataService {
       throw new IllegalArgumentException("이미 존재하는 지수 데이터 입니다.");
     }
   }
-
 }
