@@ -23,11 +23,11 @@ import org.springframework.data.domain.SliceImpl;
 @RequiredArgsConstructor
 public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
 
-  private final JPAQueryFactory queryFactory;
+  private final JPAQueryFactory jpaQueryFactory;
 
   @Override
   public Slice<IndexData> findCursorPage(CursorPageIndexDataRequest request) {
-    List<IndexData> content = queryFactory
+    List<IndexData> content = jpaQueryFactory
         .selectFrom(indexData)
         .where(
             indexData.isDeleted.eq(DeletedStatus.ACTIVE),
@@ -52,7 +52,7 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
 
   @Override
   public Long countByRequest(CursorPageIndexDataRequest request) {
-    return queryFactory.
+    return jpaQueryFactory.
         select(indexData.count())
         .from(indexData)
         .where(
