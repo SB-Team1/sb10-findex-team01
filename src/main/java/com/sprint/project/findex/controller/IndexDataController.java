@@ -5,6 +5,7 @@ import com.sprint.project.findex.dto.IndexDataDto;
 import com.sprint.project.findex.dto.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
+import com.sprint.project.findex.dto.dashboard.RankingRequest;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,15 +79,12 @@ public class IndexDataController {
   @GetMapping(value = "/performance/rank")
   @Operation(summary = "지수 성과 랭킹 조회")
   public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
-      @RequestParam(value = "indexInfoId", required = false) Long indexInfoId,
-      @RequestParam("periodType") String periodType,
-      @RequestParam(value = "limit", defaultValue = "10")
-      @Min(value = 1, message = "limit은 1 이상이어야 합니다.") int limit
+      @Valid @ModelAttribute RankingRequest request
   ) {
     List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
-        indexInfoId,
-        periodType,
-        limit
+        request.indexInfoId(),
+        request.periodType(),
+        request.limitOrDefault()
     );
 
     return ResponseEntity.status(HttpStatus.OK).body(dtos);
