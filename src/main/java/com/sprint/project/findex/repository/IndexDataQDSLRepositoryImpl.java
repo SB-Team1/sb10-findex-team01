@@ -50,6 +50,19 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     return new SliceImpl<>(content, PageRequest.of(0, request.size()), hasNext);
   }
 
+  @Override
+  public Long countByRequest(CursorPageIndexDataRequest request) {
+    return queryFactory.
+        select(indexData.count())
+        .from(indexData)
+        .where(
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
+            eqIndexInfoId(request.indexInfoId()),
+            betweenDates(request.startTime(), request.endDate())
+        )
+        .fetchOne();
+  }
+
   private BooleanExpression eqIndexInfoId(Long indexInfoId) {
     return indexInfoId != null ? indexData.indexInfo.id.eq(indexInfoId) : null;
   }
@@ -78,7 +91,8 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
 
     Comparable<?> parsedCursor = sortField.parseCursor(request.cursor());
     PathBuilder<IndexData> pathBuilder = new PathBuilder<>(IndexData.class, "indexData");
-    ComparablePath<Comparable> path = pathBuilder.getComparable(sortField.getName(), (Class) sortField.getType());
+    ComparablePath<Comparable> path = pathBuilder.getComparable(sortField.getName(),
+        (Class) sortField.getType());
 
     return compareCursor(path, parsedCursor, sortDirection, idAfter);
   }
@@ -98,10 +112,13 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     }
   }
 
-  private OrderSpecifier<?> getOrderSpecifier(IndexDataSortField sortField, SortDirection sortDirection) {
+  private OrderSpecifier<?> getOrderSpecifier(IndexDataSortField sortField,
+      SortDirection sortDirection) {
     Order order = (sortDirection == SortDirection.ASC) ? Order.ASC : Order.DESC;
     PathBuilder<IndexData> pathBuilder = new PathBuilder<>(IndexData.class, "indexData");
 
-    return new OrderSpecifier(order, pathBuilder.getComparable(sortField.getName(), sortField.getType()));
+    return new OrderSpecifier(order,
+        pathBuilder.getComparable(sortField.getName(), sortField.getType()));
   }
+
 }

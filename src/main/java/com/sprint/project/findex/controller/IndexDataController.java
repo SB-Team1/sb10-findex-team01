@@ -71,7 +71,7 @@ public class IndexDataController {
   @GetMapping
   @Operation(summary = "지수 데이터 목록 조회")
   public ResponseEntity<CursorPageResponseIndexDataDto> findAll(
-      @ModelAttribute CursorPageIndexDataRequest request
+      @Valid @ModelAttribute CursorPageIndexDataRequest request
   ) {
     CursorPageResponseIndexDataDto dto = indexDataService.findAll(request);
     return ResponseEntity.status(HttpStatus.OK).body(dto);

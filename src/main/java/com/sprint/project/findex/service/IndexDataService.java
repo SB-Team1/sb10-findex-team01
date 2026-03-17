@@ -89,12 +89,14 @@ public class IndexDataService {
         .map(indexDataMapper::toDto)
         .toList();
 
+    Long totalElements = indexDataRepository.countByRequest(request);
+
     return new CursorPageResponseIndexDataDto(
         indexDataDtoList,
         nextCursor,
         nextIdAfter,
         indexDataDtoList.size(),
-        0L,
+        totalElements,
         hasNext
     );
   }

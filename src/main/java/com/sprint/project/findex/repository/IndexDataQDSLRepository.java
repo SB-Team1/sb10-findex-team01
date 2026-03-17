@@ -6,4 +6,6 @@ import org.springframework.data.domain.Slice;
 
 public interface IndexDataQDSLRepository {
   Slice<IndexData> findCursorPage(CursorPageIndexDataRequest request);
+
+  Long countByRequest(CursorPageIndexDataRequest request);
 }
