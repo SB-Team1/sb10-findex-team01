@@ -52,4 +52,86 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
       @Param("targetDate") LocalDate targetDate,
       @Param("deletedStatus") DeletedStatus deletedStatus
   );
+
+  // 기간 내 전체 지수의 랭킹 조회
+  // current = 최신 데이터
+  // before = period 시작일 이후 가장 이른 데이터
+  @Query("""
+      select new com.sprint.project.findex.dto.dashboard.DashboardQueryDto(
+          i.id,
+          i.indexClassification,
+          i.indexName,
+          current.closingPrice,
+          before.closingPrice
+      )
+      from IndexInfo i
+      join IndexData current
+        on current.indexInfo.id = i.id
+       and current.isDeleted = :deletedStatus
+       and current.baseDate = (
+           select max(c.baseDate)
+           from IndexData c
+           where c.indexInfo.id = i.id
+             and c.baseDate <= :today
+             and c.isDeleted = :deletedStatus
+       )
+      join IndexData before
+        on before.indexInfo.id = i.id
+       and before.isDeleted = :deletedStatus
+       and before.baseDate = (
+           select max(b.baseDate)
+           from IndexData b
+           where b.indexInfo.id = i.id
+             and b.baseDate <= :compareDate
+             and b.isDeleted = :deletedStatus
+       )
+      where i.isDeleted = :deletedStatus
+  """)
+  List<DashboardQueryDto> findAllIndexRanking(
+      @Param("today") LocalDate today,
+      @Param("compareDate") LocalDate compareDate,
+      @Param("deletedStatus") DeletedStatus deletedStatus
+  );
+
+  // 기간 내 특정 지수의 랭킹 조회
+  // current = 최신 데이터
+  // before = period 시작일 이후 가장 이른 데이터
+  @Query("""
+      select new com.sprint.project.findex.dto.dashboard.DashboardQueryDto(
+          i.id,
+          i.indexClassification,
+          i.indexName,
+          current.closingPrice,
+          before.closingPrice
+      )
+      from IndexInfo i
+      join IndexData current
+        on current.indexInfo.id = i.id
+       and current.isDeleted = :deletedStatus
+       and current.baseDate = (
+           select max(c.baseDate)
+           from IndexData c
+           where c.indexInfo.id = i.id
+             and c.baseDate <= :today
+             and c.isDeleted = :deletedStatus
+       )
+      join IndexData before
+        on before.indexInfo.id = i.id
+       and before.isDeleted = :deletedStatus
+       and before.baseDate = (
+           select max(b.baseDate)
+           from IndexData b
+           where b.indexInfo.id = i.id
+             and b.baseDate <= :compareDate
+             and b.isDeleted = :deletedStatus
+       )
+      where i.id = :indexInfoId
+        and i.isDeleted = :deletedStatus
+  """)
+  List<DashboardQueryDto> findIndexRankingByIndexInfoId(
+      @Param("indexInfoId") Long indexInfoId,
+      @Param("today") LocalDate today,
+      @Param("compareDate") LocalDate compareDate,
+      @Param("deletedStatus") DeletedStatus deletedStatus
+  );
 }

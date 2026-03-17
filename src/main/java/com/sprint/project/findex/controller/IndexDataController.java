@@ -6,15 +6,19 @@ import com.sprint.project.findex.dto.indexdata.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataDto;
 import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
+import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
+import com.sprint.project.findex.dto.dashboard.RankingRequest;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -30,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/index-data")
 @Tag(name = "지수 데이터 API")
+@Validated
 public class IndexDataController {
 
   private final IndexDataService indexDataService;
@@ -73,11 +78,26 @@ public class IndexDataController {
   }
 
   @GetMapping(value = "/performance/favorite")
-  public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance(
-      @RequestParam("periodType") String periodType
-  ) {
-    List<IndexPerformanceDto> dto = dashboardService.findFavoriteIndexPerformance(periodType);
+  @Operation(summary = "주요 지수 현황 조회")
+  public ResponseEntity<List<IndexPerformanceDto>> getIndexPerformance (
+        @RequestParam("periodType") String periodType
+  ){
+      List<IndexPerformanceDto> dto = dashboardService.findFavoriteIndexPerformance(periodType);
 
-    return ResponseEntity.status(HttpStatus.OK).body(dto);
+      return ResponseEntity.status(HttpStatus.OK).body(dto);
+  }
+
+  @GetMapping(value = "/performance/rank")
+  @Operation(summary = "지수 성과 랭킹 조회")
+  public ResponseEntity<List<RankedIndexPerformanceDto>> getIndexRanking (
+      @Valid @ModelAttribute RankingRequest request
+  ) {
+    List<RankedIndexPerformanceDto> dtos = dashboardService.findIndexRanking(
+        request.indexInfoId(),
+        request.periodType(),
+        request.limitOrDefault()
+    );
+
+    return ResponseEntity.status(HttpStatus.OK).body(dtos);
   }
 }
