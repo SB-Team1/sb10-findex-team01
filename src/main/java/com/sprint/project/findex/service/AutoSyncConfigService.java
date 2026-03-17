@@ -94,7 +94,7 @@ public class AutoSyncConfigService {
         .map(autoSyncConfigMapper::toDto)
         .collect(java.util.stream.Collectors.toList());
 
-    // 6. 🚨 추가된 부분: 다음 페이지 요청 시 사용할 cursor와 nextIdAfter 값 추출
+    // 6. 다음 페이지 요청 시 사용할 cursor와 nextIdAfter 값 추출
     String nextCursor = null;
     Long nextIdAfter = null;
 
@@ -111,7 +111,6 @@ public class AutoSyncConfigService {
       }
     }
 
-    // 7. 🚨 대망의 최종 반환: DTO가 요구하는 6개의 파라미터를 순서대로 모두 넣어서 빨간 줄 격파!
     return new AutoSyncConfigListResponse(
         dtoList,               // content
         nextCursor,            // nextCursor
