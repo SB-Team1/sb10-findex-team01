@@ -1,4 +1,4 @@
-package com.sprint.project.findex.dto;
+package com.sprint.project.findex.dto.indexinfo;
 
 import com.sprint.project.findex.entity.SourceType;
 import java.time.LocalDate;

@@ -8,6 +8,7 @@ import com.sprint.project.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.mapper.IndexInfoMapper;
 import com.sprint.project.findex.repository.IndexInfoRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,32 @@ public class IndexInfoService {
 
   // todo
   @Transactional(readOnly = true)
-  public CursorPageResponseIndexInfoDto find(IndexInfoCursorPageRequest request) {
-    return null;
+  public CursorPageResponseIndexInfoDto findWithCursorPage(IndexInfoCursorPageRequest request) {
+    List<IndexInfo> results = indexInfoRepository.findByCursor(request);
+    return toCursorPageDto(results, request);
+  }
+
+  private CursorPageResponseIndexInfoDto toCursorPageDto(List<IndexInfo> results,
+      IndexInfoCursorPageRequest request) {
+    String nextCursor = "";
+    Long nextIdAfter = null;
+    int pageSize = request.size();
+    Long totalElements = indexInfoRepository.count();
+    boolean hasNext = false;
+    if (results.size() > pageSize) {
+      IndexInfo indexInfo = results.get(pageSize);
+      nextCursor = indexInfo.getIndexClassification();
+      nextIdAfter = indexInfo.getId();
+      results.remove(pageSize);
+      hasNext = true;
+    }
+    return CursorPageResponseIndexInfoDto.builder()
+        .content(results)
+        .nextCursor(nextCursor)
+        .nextIdAfter(nextIdAfter)
+        .size(pageSize)
+        .totalElements(totalElements)
+        .hasNext(hasNext)
+        .build();
   }
 }
