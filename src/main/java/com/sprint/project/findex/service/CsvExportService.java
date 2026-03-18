@@ -1,7 +1,10 @@
 package com.sprint.project.findex.service;
 
 import com.sprint.project.findex.dto.indexdata.IndexDataCsvExportRequest;
+import com.sprint.project.findex.dto.indexdata.IndexDataCsvHeader;
 import com.sprint.project.findex.entity.IndexData;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import java.io.IOException;
 import java.io.Writer;
@@ -22,7 +25,7 @@ public class CsvExportService {
   public void exportToCsv(Writer writer, IndexDataCsvExportRequest request) {
 
     CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-        .setHeader("기준일자", "시가", "종가", "고가", "저가", "전일대비등락", "등락률", "거래량", "거래대금", "시가총액")
+        .setHeader(IndexDataCsvHeader.getHeaderArray())
         .build();
 
     List<IndexData> dataList = indexDataRepository.findAllForExport(request);
@@ -44,8 +47,7 @@ public class CsvExportService {
       }
       printer.flush();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new ApiException(ErrorCode.FILE_EXPORT_FAILED);
     }
   }
-
 }

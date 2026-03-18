@@ -31,10 +31,10 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     List<IndexData> content = queryFactory
         .selectFrom(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
+            cursorOrNull(request),
             betweenDates(request.startDate(), request.endDate()),
-            cursorOrNull(request)
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
         )
         .orderBy(
             getOrderSpecifier(request.sortField(), request.sortDirection()),
@@ -56,10 +56,10 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     return queryFactory
         .selectFrom(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startDate(), request.endDate())
-        )
+            betweenDates(request.startDate(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            )
         .orderBy(getOrderSpecifier(request.sortField(), request.sortDirection()))
         .fetch();
   }

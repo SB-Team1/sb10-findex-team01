@@ -10,6 +10,8 @@ import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankingRequest;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.service.CsvExportService;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
@@ -130,7 +132,7 @@ public class IndexDataController {
     try (Writer writer = response.getWriter()) {
       csvExportService.exportToCsv(writer, request);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new ApiException(ErrorCode.FILE_EXPORT_FAILED);
     }
   }
 }
