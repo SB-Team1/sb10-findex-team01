@@ -13,7 +13,7 @@ CREATE TABLE index_infos
   is_deleted           VARCHAR(10)           NOT NULL CHECK (is_deleted in ('ACTIVE', 'DELETED'))
 );
 
-CREATE INDEX idx_index_infos ON index_infos (index_classification, index_name);
+CREATE INDEX idx_index_infos ON index_infos (index_name, index_classification);
 
 CREATE TABLE index_datas
 (
