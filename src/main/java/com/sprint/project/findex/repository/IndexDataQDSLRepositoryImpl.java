@@ -30,10 +30,11 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     List<IndexData> content = jpaQueryFactory
         .selectFrom(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
             betweenDates(request.startTime(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             cursorOrNull(request)
+
         )
         .orderBy(
             getOrderSpecifier(request.sortField(), request.sortDirection()),
