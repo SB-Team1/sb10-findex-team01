@@ -20,6 +20,5 @@ public interface IndexInfoMapper extends BaseMapper<IndexInfo> {
 
   @Override
   @Mapping(target = "sourceType", constant = "OPEN_API")
-  @Mapping(target = "isDeleted", constant = "ACTIVE")
   IndexInfo toEntity(StockIndexDto rawDto);
 }

@@ -2,7 +2,6 @@ package com.sprint.project.findex.repository;
 
 import com.sprint.project.findex.dto.dashboard.DashboardQueryDto;
 import com.sprint.project.findex.entity.IndexData;
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.repository.projection.DashboardRankingProjection;
 import java.time.LocalDate;
 import java.util.List;
@@ -50,8 +49,7 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
         and current.closingPrice <> before.closingPrice
       """)
   List<DashboardQueryDto> findChangedFavoriteIndexPerformance(
-      @Param("targetDate") LocalDate targetDate,
-      @Param("deletedStatus") DeletedStatus deletedStatus
+      @Param("targetDate") LocalDate targetDate
   );
 
   @Query(value = """
@@ -94,8 +92,7 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
     """, nativeQuery = true)
   List<DashboardRankingProjection> findAllIndexRanking(
       @Param("today") LocalDate today,
-      @Param("compareDate") LocalDate compareDate,
-      @Param("deletedStatus") String deletedStatus
+      @Param("compareDate") LocalDate compareDate
   );
 
   // 특정 지수 1건에 대해서만
@@ -132,8 +129,7 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
   List<DashboardRankingProjection> findIndexRankingByIndexInfoId(
       @Param("indexInfoId") Long indexInfoId,
       @Param("today") LocalDate today,
-      @Param("compareDate") LocalDate compareDate,
-      @Param("deletedStatus") String deletedStatus
+      @Param("compareDate") LocalDate compareDate
   );
 
   // 윈도우 함수 사용으로 인한 native 쿼리 작성
@@ -197,7 +193,6 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
   // dto로 바로 매핑이 어렵기 때문에 한 행(row)을 Object 배열로 받음
   List<Object[]> findIndexChartData(
       @Param("indexInfoId") Long indexInfoId,
-      @Param("periodType") String periodType,
-      @Param("isDeleted") String isDeleted
+      @Param("periodType") String periodType
   );
 }

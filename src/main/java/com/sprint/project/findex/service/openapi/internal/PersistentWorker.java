@@ -75,7 +75,6 @@ public class PersistentWorker {
             .baseIndex(dto.baseIndex())
             .sourceType(SourceType.OPEN_API)
             .favorite(false)
-            .isDeleted(DeletedStatus.ACTIVE)
             .build();
         toInsert.add(indexInfo);
         indexInfoMap.put(key, indexInfo);

@@ -12,7 +12,6 @@ import com.sprint.project.findex.dto.SortDirection;
 import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataCsvExportRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataSortField;
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,8 +32,7 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
         .where(
             eqIndexInfoId(request.indexInfoId()),
             cursorOrNull(request),
-            betweenDates(request.startDate(), request.endDate()),
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            betweenDates(request.startDate(), request.endDate())
         )
         .orderBy(
             getOrderSpecifier(request.sortField(), request.sortDirection()),
@@ -57,8 +55,7 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
         .selectFrom(indexData)
         .where(
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startDate(), request.endDate()),
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            betweenDates(request.startDate(), request.endDate())
             )
         .orderBy(getOrderSpecifier(request.sortField(), request.sortDirection()))
         .fetch();
@@ -71,8 +68,7 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
         .from(indexData)
         .where(
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startDate(), request.endDate()),
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            betweenDates(request.startDate(), request.endDate())
             )
         .fetchOne();
   }

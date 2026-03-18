@@ -15,6 +15,5 @@ public interface IndexDataMapper extends BaseMapper<IndexData> {
 
   @Override
   @Mapping(target = "sourceType", constant = "OPEN_API")
-  @Mapping(target = "isDeleted", constant = "ACTIVE")
   IndexData toEntity(StockIndexDto stockIndexDto);
 }

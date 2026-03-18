@@ -9,11 +9,10 @@ CREATE TABLE index_infos
   base_point_in_time   date                  NOT NULL,
   base_index           DOUBLE PRECISION      NOT NULL,
   source_type          VARCHAR(10)           NOT NULL CHECK (source_type IN ('USER', 'OPEN_API')),
-  favorite             BOOLEAN DEFAULT FALSE NOT NULL,
-  is_deleted           VARCHAR(10)           NOT NULL CHECK (is_deleted in ('ACTIVE', 'DELETED'))
+  favorite             BOOLEAN DEFAULT FALSE NOT NULL
 );
 
-CREATE INDEX idx_index_infos ON index_infos (index_name, index_classification);
+CREATE UNIQUE INDEX idx_index_infos ON index_infos (index_name, index_classification);
 
 CREATE TABLE index_datas
 (
@@ -31,11 +30,10 @@ CREATE TABLE index_datas
   trading_price       bigint           NOT NULL,
   market_total_amount bigint           NOT NULL,
   created_at          timestamptz      NOT NULL,
-  updated_at          timestamptz      NOT NULL,
-  is_deleted          VARCHAR(10)      NOT NULL CHECK (is_deleted in ('ACTIVE', 'DELETED'))
+  updated_at          timestamptz      NOT NULL
 );
 
-CREATE INDEX idx_index_datas ON index_datas (index_info_id, base_date);
+CREATE UNIQUE INDEX idx_index_datas ON index_datas (index_info_id, base_date);
 
 CREATE TABLE sync_jobs
 (
@@ -59,7 +57,7 @@ CREATE TABLE auto_sync_configs
 
 ALTER TABLE index_datas
   ADD CONSTRAINT fk_index_datas_index_info_id
-    FOREIGN KEY (index_info_id) REFERENCES index_infos (id);
+    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE CASCADE;
 
 ALTER TABLE sync_jobs
   ADD CONSTRAINT fk_sync_jobs_index_info_id
@@ -67,5 +65,5 @@ ALTER TABLE sync_jobs
 
 ALTER TABLE auto_sync_configs
   ADD CONSTRAINT fk_auto_sync_configs_index_info_id
-    FOREIGN KEY (index_info_id) REFERENCES index_infos (id),
+    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE SET NULL,
   ADD CONSTRAINT uk_auto_sync_configs_index_info_id UNIQUE (index_info_id);
