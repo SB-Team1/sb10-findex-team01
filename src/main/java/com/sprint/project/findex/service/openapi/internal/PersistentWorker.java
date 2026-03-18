@@ -13,6 +13,7 @@ import com.sprint.project.findex.mapper.IndexInfoMapper;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.SyncJobRepository;
+import com.sprint.project.findex.service.AutoSyncConfigService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -32,6 +33,7 @@ public class PersistentWorker {
 
   private final IndexInfoMapper indexInfoMapper;
   private final IndexDataMapper indexDataMapper;
+  private final AutoSyncConfigService autoSyncConfigService;
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
   private final SyncJobRepository syncJobRepository;
@@ -78,6 +80,7 @@ public class PersistentWorker {
             .build();
         toInsert.add(indexInfo);
         indexInfoMap.put(key, indexInfo);
+        autoSyncConfigService.create(indexInfo);
       }
 
       syncJobs.add(
