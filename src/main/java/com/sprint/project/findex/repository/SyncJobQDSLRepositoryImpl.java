@@ -44,9 +44,10 @@ public class SyncJobQDSLRepositoryImpl implements SyncJobQDSLRepository {
     }
 
     // 정렬
+    boolean isDesc = "desc".equalsIgnoreCase(condition.sortDirection());
     OrderSpecifier<?> orderSpecifier = "jobTime".equals(condition.sortField())
-        ? syncJob.jobTime.desc()
-        : syncJob.targetDate.desc();
+        ? (isDesc ? syncJob.jobTime.desc() : syncJob.jobTime.asc())
+        : (isDesc ? syncJob.targetDate.desc() : syncJob.targetDate.asc());
 
     return queryFactory
         .selectFrom(syncJob)
