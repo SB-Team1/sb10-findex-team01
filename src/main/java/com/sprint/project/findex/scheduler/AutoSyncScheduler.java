@@ -1,7 +1,7 @@
 package com.sprint.project.findex.scheduler;
 
 import com.sprint.project.findex.entity.AutoSyncConfig;
-import com.sprint.project.findex.repository.AutoSyncConfigRepository;
+import com.sprint.project.findex.repository.autosyncconfig.AutoSyncConfigRepository;
 import com.sprint.project.findex.service.openapi.OpenApiService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

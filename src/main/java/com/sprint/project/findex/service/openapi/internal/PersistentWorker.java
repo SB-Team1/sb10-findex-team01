@@ -94,6 +94,7 @@ public class PersistentWorker {
     return syncJobs;
   }
 
+  @Transactional
   public void saveIndexDataBatch(List<StockIndexDto> dtos, IndexInfo indexInfo) {
     if (dtos.isEmpty()) return;
 
