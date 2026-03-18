@@ -1,5 +1,6 @@
 package com.sprint.project.findex.config;
 
+import com.querydsl.core.types.Order;
 import com.sprint.project.findex.dto.SortDirection;
 import com.sprint.project.findex.dto.indexdata.IndexDataSortField;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSortField;
@@ -27,5 +28,6 @@ public class FindexConfig implements WebMvcConfigurer {
     registry.addConverter(String.class, IndexDataSortField.class, IndexDataSortField::from);
     registry.addConverter(String.class, SortDirection.class, SortDirection::from);
     registry.addConverter(String.class, IndexInfoSortField.class, IndexInfoSortField::from);
+    registry.addConverter(String.class, Order.class, SortDirection::toOrderType);
   }
 }

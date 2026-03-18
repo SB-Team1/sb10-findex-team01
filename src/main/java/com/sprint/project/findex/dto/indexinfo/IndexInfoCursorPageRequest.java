@@ -2,7 +2,7 @@ package com.sprint.project.findex.dto.indexinfo;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.sprint.project.findex.dto.SortDirection;
+import com.querydsl.core.types.Order;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.Optional;
@@ -30,7 +30,7 @@ public final class IndexInfoCursorPageRequest {
   private IndexInfoSortField sortField = IndexInfoSortField.INDEX_CLASSIFICATION;
 
   @JsonSetter(nulls = Nulls.SKIP)
-  private SortDirection sortDirection = SortDirection.ASC;
+  private Order sortDirection = Order.DESC;
 
   @Min(1)
   @Max(500)
