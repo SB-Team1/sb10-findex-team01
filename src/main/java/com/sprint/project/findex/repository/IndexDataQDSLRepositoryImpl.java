@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sprint.project.findex.dto.SortDirection;
 import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
+import com.sprint.project.findex.dto.indexdata.IndexDataCsvExportRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataSortField;
 import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
@@ -30,10 +31,10 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
     List<IndexData> content = queryFactory
         .selectFrom(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startTime(), request.endDate()),
-            cursorOrNull(request)
+            cursorOrNull(request),
+            betweenDates(request.startDate(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
         )
         .orderBy(
             getOrderSpecifier(request.sortField(), request.sortDirection()),
@@ -51,15 +52,28 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
   }
 
   @Override
+  public List<IndexData> findAllForExport(IndexDataCsvExportRequest request) {
+    return queryFactory
+        .selectFrom(indexData)
+        .where(
+            eqIndexInfoId(request.indexInfoId()),
+            betweenDates(request.startDate(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            )
+        .orderBy(getOrderSpecifier(request.sortField(), request.sortDirection()))
+        .fetch();
+  }
+
+  @Override
   public Long countByRequest(CursorPageIndexDataRequest request) {
     return queryFactory.
         select(indexData.count())
         .from(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startTime(), request.endDate())
-        )
+            betweenDates(request.startDate(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            )
         .fetchOne();
   }
 

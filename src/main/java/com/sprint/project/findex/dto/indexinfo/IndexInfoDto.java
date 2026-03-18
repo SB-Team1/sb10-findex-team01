@@ -6,7 +6,7 @@ import lombok.Builder;
 
 @Builder
 public record IndexInfoDto(Long id, String indexClassification, String indexName,
-                           Integer employedItemsCount, LocalDate basePointInTime, Double baseIndex,
+                           Long employedItemsCount, LocalDate basePointInTime, Double baseIndex,
                            SourceType sourceType, boolean favorite) {
 
 }
