@@ -26,7 +26,7 @@ public class AutoSyncConfig {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Integer id;
+  private Long id;
 
   @CreatedDate
   @Column(name = "created_at", nullable = false, updatable = false)
@@ -42,7 +42,7 @@ public class AutoSyncConfig {
   private IndexInfo indexInfo;
 
   // 생성자
-  public AutoSyncConfig(Integer Id, IndexInfo indexInfo){
+  public AutoSyncConfig(Long Id, IndexInfo indexInfo){
     this.id = Id;
     this.indexInfo = indexInfo;
     this.enabled = false;

@@ -56,7 +56,7 @@ public class AutoSyncConfigController {
           )
       )
   })
-  public ResponseEntity<AutoSyncConfigDto> update(@PathVariable Integer id,
+  public ResponseEntity<AutoSyncConfigDto> update(@PathVariable Long id,
                                   @RequestBody AutoSyncConfigUpdateRequest request){
     AutoSyncConfigDto autoSyncConfigDto = autoSyncConfigService.update(id, request);
     return ResponseEntity

@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AutoSyncConfigDto {
 
-  private Integer id;
-  private Integer indexInfoId;
+  private Long id;
+  private Long indexInfoId;
   private String indexClassification;
   private String indexName;
 

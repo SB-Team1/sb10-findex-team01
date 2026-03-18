@@ -15,7 +15,7 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
   // DashboardQueryDto로 우회해서 서비스에서 계산후 처리하는 방향으로 결정
   // targetDate 기준 가장 이른 baseDate를 기준으로 즐겨찾기 지수 조회
   // current = 최신 데이터
-  // before = targetDate 이하에서 가장 최근 데이터
+  // before = period 시작일 이후 가장 이른 데이터
   @Query("""
       select new com.sprint.project.findex.dto.dashboard.DashboardQueryDto(
           i.id,
