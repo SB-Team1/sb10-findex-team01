@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "index_infos")
+@Table(
+    name = "index_infos",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "idx_index_infos",
+            columnNames = {"index_name", "index_classification"}
+        )
+    }
+)
 public class IndexInfo extends BaseEntity {
 
   @Column(nullable = false, length = 240)
