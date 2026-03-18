@@ -8,6 +8,7 @@ import com.sprint.project.findex.entity.AutoSyncConfig;
 import com.sprint.project.findex.global.exception.ApiException;
 import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.AutoSyncConfigMapper;
+import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.autosyncconfig.AutoSyncConfigRepository;
 import com.sprint.project.findex.entity.IndexInfo;
 import java.util.List;
@@ -24,6 +25,7 @@ public class AutoSyncConfigService {
 
   private final AutoSyncConfigRepository autoSyncConfigRepository;
   private final AutoSyncConfigMapper autoSyncConfigMapper; // MapStruct 인터페이스 주입
+  private final IndexInfoRepository indexInfoRepository;
 
   @Transactional
   public AutoSyncConfigDto create(IndexInfo indexInfo) {
@@ -31,9 +33,32 @@ public class AutoSyncConfigService {
       throw new ApiException(ErrorCode.INVALID_PARAMETER, "지수 정보가 존재하지 않습니다.");
     }
 
-    AutoSyncConfig autoSyncConfig = new AutoSyncConfig(null, indexInfo);
+    AutoSyncConfig autoSyncConfig = new AutoSyncConfig(indexInfo);
     AutoSyncConfig savedConfig = autoSyncConfigRepository.save(autoSyncConfig);
 
+    return autoSyncConfigMapper.toDto(savedConfig);
+  }
+
+  public void createAll(List<IndexInfo> indexInfos) {
+    List<AutoSyncConfig> configs = indexInfos.stream()
+        .map(indexInfo -> AutoSyncConfig.builder().indexInfo(indexInfo).build())
+        .toList();
+    autoSyncConfigRepository.saveAll(configs);
+  }
+
+  @Transactional
+  public AutoSyncConfigDto register(AutoSyncConfigDto request) {
+
+    IndexInfo indexInfo = indexInfoRepository.findById(request.getIndexInfoId())
+        .orElseThrow(() -> new ApiException(ErrorCode.RESOURCE_NOT_FOUND, "지수 정보가 없습니다."));
+
+    AutoSyncConfig autoSyncConfig = AutoSyncConfig.builder()
+        .indexInfo(indexInfo)
+        .enabled(request.isEnabled()) // 사용자가 입력한 활성화 여부 적용
+        // 추가 속성들 세팅...
+        .build();
+
+    AutoSyncConfig savedConfig = autoSyncConfigRepository.save(autoSyncConfig);
     return autoSyncConfigMapper.toDto(savedConfig);
   }
 

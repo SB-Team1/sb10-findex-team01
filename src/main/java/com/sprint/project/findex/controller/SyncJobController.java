@@ -31,7 +31,7 @@ public class SyncJobController {
   }
 
   @PostMapping("/index-data")
-  public ResponseEntity<?> syncIndexData(
+  public ResponseEntity<List<SyncJobDto>> syncIndexData(
       @Valid @RequestBody IndexDataSyncRequest indexDataSyncRequest,
       HttpServletRequest request) {
     return ResponseEntity.ok(syncJobService.syncIndexData(indexDataSyncRequest, request));

@@ -13,10 +13,12 @@ import com.sprint.project.findex.mapper.IndexInfoMapper;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.SyncJobRepository;
+import com.sprint.project.findex.service.AutoSyncConfigService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +33,7 @@ public class PersistentWorker {
 
   private final IndexInfoMapper indexInfoMapper;
   private final IndexDataMapper indexDataMapper;
+  private final AutoSyncConfigService autoSyncConfigService;
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
   private final SyncJobRepository syncJobRepository;
@@ -88,6 +91,7 @@ public class PersistentWorker {
     indexInfoRepository.flush();
 
     syncJobRepository.saveAll(syncJobs);
+    autoSyncConfigService.createAll(toInsert);
 
     return syncJobs;
   }
@@ -128,21 +132,22 @@ public class PersistentWorker {
   }
 
   public Map<Long, LocalDate> findLastSyncDatesBulk(List<AutoSyncConfig> configs) {
-    List<IndexInfo> indexInfos = configs.stream()
-        .map(AutoSyncConfig::getIndexInfo)
-        .toList();
+    if (configs.isEmpty()) return new HashMap<>();
 
-    List<IndexDataRepository.LastSyncDateProjection> results = indexDataRepository.findLastSyncDates(indexInfos);
+    // 파라미터를 넘기는 대신, 쿼리 내부에서 JOIN으로 처리하는 메서드 호출
+    List<SyncJobRepository.LastSyncDateProjection> results =
+        syncJobRepository.findLastSyncDatesEnabledOnly();
 
     Map<Long, LocalDate> lastSyncMap = results.stream()
         .collect(Collectors.toMap(
-            IndexDataRepository.LastSyncDateProjection::getIndexInfoId,
-            IndexDataRepository.LastSyncDateProjection::getLastDate
+            SyncJobRepository.LastSyncDateProjection::getIndexInfoId,
+            SyncJobRepository.LastSyncDateProjection::getLastDate
         ));
 
+    // 데이터가 없는 경우 기본값(시작 시점) 채워넣기
     for (AutoSyncConfig config : configs) {
       lastSyncMap.putIfAbsent(config.getIndexInfo().getId(),
-          config.getIndexInfo().getCreatedAt().atZone(ZoneId.systemDefault()).toLocalDate());
+          config.getIndexInfo().getBasePointInTime());
     }
 
     return lastSyncMap;
