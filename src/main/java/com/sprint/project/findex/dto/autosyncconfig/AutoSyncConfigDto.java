@@ -15,5 +15,7 @@ public class AutoSyncConfigDto {
   private Integer indexInfoId;
   private String indexClassification;
   private String indexName;
+
+  @Builder.Default
   private boolean enabled = false;
 }
