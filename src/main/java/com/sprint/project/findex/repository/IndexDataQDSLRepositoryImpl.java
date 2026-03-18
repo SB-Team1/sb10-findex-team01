@@ -70,10 +70,10 @@ public class IndexDataQDSLRepositoryImpl implements IndexDataQDSLRepository {
         select(indexData.count())
         .from(indexData)
         .where(
-            indexData.isDeleted.eq(DeletedStatus.ACTIVE),
             eqIndexInfoId(request.indexInfoId()),
-            betweenDates(request.startDate(), request.endDate())
-        )
+            betweenDates(request.startDate(), request.endDate()),
+            indexData.isDeleted.eq(DeletedStatus.ACTIVE)
+            )
         .fetchOne();
   }
 
