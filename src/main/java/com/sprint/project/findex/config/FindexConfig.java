@@ -2,6 +2,7 @@ package com.sprint.project.findex.config;
 
 import com.sprint.project.findex.dto.SortDirection;
 import com.sprint.project.findex.dto.indexdata.IndexDataSortField;
+import com.sprint.project.findex.dto.indexinfo.IndexInfoSortField;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.format.FormatterRegistry;
@@ -25,5 +26,6 @@ public class FindexConfig implements WebMvcConfigurer {
   public void addFormatters(FormatterRegistry registry) {
     registry.addConverter(String.class, IndexDataSortField.class, IndexDataSortField::from);
     registry.addConverter(String.class, SortDirection.class, SortDirection::from);
+    registry.addConverter(String.class, IndexInfoSortField.class, IndexInfoSortField::from);
   }
 }

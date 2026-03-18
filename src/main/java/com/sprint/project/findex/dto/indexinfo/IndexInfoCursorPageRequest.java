@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.Nulls;
 import com.sprint.project.findex.dto.SortDirection;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.Optional;
+import java.util.function.Predicate;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +23,8 @@ public final class IndexInfoCursorPageRequest {
   private String cursor;
   private Boolean favorite;
 
-  @Min(1)
-  @JsonSetter(nulls = Nulls.SKIP)
-  private Long idAfter = 1L;
+  @Min(0)
+  private Long idAfter;
 
   @JsonSetter(nulls = Nulls.SKIP)
   private IndexInfoSortField sortField = IndexInfoSortField.INDEX_CLASSIFICATION;
@@ -36,4 +37,17 @@ public final class IndexInfoCursorPageRequest {
   @JsonSetter(nulls = Nulls.SKIP)
   private Integer size = 10;
 
+  private static String stringOrNull(String value) {
+    return Optional.ofNullable(value)
+        .filter(Predicate.not(String::isEmpty))
+        .orElse(null);
+  }
+
+  public void setIndexClassification(String indexClassification) {
+    this.indexClassification = stringOrNull(indexClassification);
+  }
+
+  public void setIndexName(String indexName) {
+    this.indexName = stringOrNull(indexName);
+  }
 }

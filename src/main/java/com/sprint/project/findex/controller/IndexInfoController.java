@@ -7,6 +7,7 @@ import com.sprint.project.findex.dto.indexinfo.IndexInfoDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.sprint.project.findex.service.IndexInfoService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -31,7 +32,7 @@ public class IndexInfoController {
 
   @GetMapping
   public ResponseEntity<CursorPageResponseIndexInfoDto> findWithCursorPage(
-      @ParameterObject @ModelAttribute IndexInfoCursorPageRequest request) {
+      @ParameterObject @ModelAttribute @Valid IndexInfoCursorPageRequest request) {
     return ResponseEntity.status(HttpStatus.OK).body(indexInfoService.findWithCursorPage(request));
   }
 
@@ -41,7 +42,7 @@ public class IndexInfoController {
   }
 
   @PostMapping
-  public ResponseEntity<IndexInfoDto> create(@RequestBody IndexInfoCreateRequest request) {
+  public ResponseEntity<IndexInfoDto> create(@RequestBody @Valid IndexInfoCreateRequest request) {
     return ResponseEntity.status(HttpStatus.OK).body(indexInfoService.create(request));
   }
 
@@ -57,8 +58,8 @@ public class IndexInfoController {
   }
 
   @PatchMapping("/{id}")
-  public ResponseEntity<IndexInfoDto> update(@PathVariable Long id, @RequestBody
-  IndexInfoUpdateRequest request) {
+  public ResponseEntity<IndexInfoDto> update(@PathVariable Long id,
+      @RequestBody @Valid IndexInfoUpdateRequest request) {
     return ResponseEntity.status(HttpStatus.OK).body(indexInfoService.update(id, request));
   }
 }

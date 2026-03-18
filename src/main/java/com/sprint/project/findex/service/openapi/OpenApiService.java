@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -59,7 +58,7 @@ public class OpenApiService {
       LocalDate endDate = LocalDate.now();
 
       int pageNo = 1;
-      int numOfRows = 500;
+      int numOfRows = 1000;
       List<StockIndexDto> buffer = new ArrayList<>();
 
       while (true) {
