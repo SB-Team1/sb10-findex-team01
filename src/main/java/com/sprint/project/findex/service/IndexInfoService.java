@@ -23,10 +23,12 @@ public class IndexInfoService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexInfoMapper indexInfoMapper;
+  private final AutoSyncConfigService autoSyncConfigService;
 
   public IndexInfoDto create(IndexInfoCreateRequest request) {
     IndexInfo indexInfo = indexInfoMapper.toEntity(request);
     indexInfoRepository.save(indexInfo);
+    autoSyncConfigService.create(indexInfo);
     return indexInfoMapper.toDto(indexInfo);
   }
 
