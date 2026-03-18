@@ -9,8 +9,6 @@ import com.sprint.project.findex.dto.syncjob.SyncJobDto;
 import com.sprint.project.findex.dto.syncjob.SyncJobRequestQuery;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SyncJob;
-import com.sprint.project.findex.global.exception.ApiException;
-import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.SyncJobMapper;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.SyncJobRepository;
@@ -43,7 +41,7 @@ public class SyncJobService {
 
     List<SyncJob> response = new ArrayList<>();
     String requestIpAddr = request.getRemoteAddr();
-    LocalDate baseDate = getLastWeekday();
+    LocalDate baseDate = getLastValidDay();
 
     // DB에서 지수 정보 전체를 map으로 미리 불러오기 (key는 unique 체크)
     Map<String, IndexInfo> indexInfoMap = indexInfoRepository.findAll()
@@ -53,9 +51,10 @@ public class SyncJobService {
             Function.identity()
         ));
 
+    boolean hasMore = true;
     int pageNo = 1;
 
-    while (true) {
+    while (hasMore) {
       StockMarketIndexResponse openApiResponse = indexSyncService.fetchStockIndex(
           StockMarketIndexRequest.builder()
               .pageNo(pageNo)
@@ -67,7 +66,8 @@ public class SyncJobService {
       List<StockIndexDto> stockIndexDtoList = indexSyncService.extractDtoListFromResponse(
           openApiResponse);
       if (stockIndexDtoList == null || stockIndexDtoList.isEmpty()) {
-        break;
+        hasMore = false;
+        continue;
       }
 
       // worker 이용하여 IndexInfo와 SyncJob를 한 트랜잭션 내에서 함께 저장
@@ -152,15 +152,19 @@ public class SyncJobService {
   }
 
   // OpenAPI에서 유효한 값을 줄 수 있는 가장 최신의 날짜 구하기
-  private LocalDate getLastWeekday() {
-    LocalDate baseDate = LocalDate.now();
-    LocalDate minimumDate = baseDate.minusDays(14); // 14일 전까지만 확인함
+  private LocalDate getLastValidDay() {
+    LocalDate baseDate = LocalDate.now().minusDays(1);
+    LocalDate minimumDate = baseDate.minusDays(30); // 30일 전까지만 확인함
+
+    StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
+        .pageNo(1)
+        .numOfRows(10)
+        .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+        .build();
 
     while (!baseDate.isBefore(minimumDate)) {
       StockMarketIndexResponse stockMarketIndexResponse = indexSyncService.fetchStockIndex(
-          StockMarketIndexRequest.builder()
-              .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
-              .build()
+          stockMarketIndexRequest
       );
 
       List<StockIndexDto> responseItems = indexSyncService.extractDtoListFromResponse(
@@ -173,6 +177,7 @@ public class SyncJobService {
       baseDate = baseDate.minusDays(1);
     }
 
-    throw new ApiException(ErrorCode.VALID_BASE_DATE_NOT_FOUND);
+    // exception 대신 오늘 날짜 리턴하도록 함
+    return LocalDate.now();
   }
 }
