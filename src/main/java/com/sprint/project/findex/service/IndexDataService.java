@@ -5,7 +5,6 @@ import com.sprint.project.findex.dto.indexdata.CursorPageResponseIndexDataDto;
 import com.sprint.project.findex.dto.indexdata.IndexDataCreateRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataDto;
 import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SourceType;
@@ -15,7 +14,6 @@ import com.sprint.project.findex.mapper.IndexDataMapper;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import java.util.List;
-import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -32,11 +30,9 @@ public class IndexDataService {
 
   public IndexDataDto createByUser(IndexDataCreateRequest request) {
 
-    //todo 임시로 findById를 호출하고 있음, 추후 Soft Delete 로직 적용 시 달라질 수 있음
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
         .orElseThrow(() -> new ApiException(ErrorCode.INDEX_INFO_ID_NOT_FOUND));
 
-    validateDuplicateData(request, indexInfo);
 
     IndexData indexData = IndexData.builder()
         .indexInfo(indexInfo)
@@ -51,7 +47,6 @@ public class IndexDataService {
         .tradingQuantity(request.tradingQuantity())
         .tradingPrice(request.tradingPrice())
         .marketTotalAmount(request.marketTotalAmount())
-        .isDeleted(DeletedStatus.ACTIVE)
         .build();
 
     indexDataRepository.save(indexData);
@@ -60,7 +55,7 @@ public class IndexDataService {
   }
 
   public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
-    IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
+    IndexData indexData = indexDataRepository.findById(id)
         .orElseThrow(() -> new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND));
     indexData.update(request);
 
@@ -68,11 +63,12 @@ public class IndexDataService {
   }
 
   public void delete(Long id) {
-    IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
+    IndexData indexData = indexDataRepository.findById(id)
         .orElseThrow(() -> new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND));
-    indexData.updateIsDeleted(DeletedStatus.DELETED);
+    indexDataRepository.delete(indexData);
   }
 
+  @Transactional(readOnly = true)
   public CursorPageResponseIndexDataDto findAll(CursorPageIndexDataRequest request) {
     Slice<IndexData> slice = indexDataRepository.findCursorPage(request);
     List<IndexData> content = slice.getContent();
@@ -101,13 +97,5 @@ public class IndexDataService {
         totalElements,
         hasNext
     );
-  }
-
-  private void validateDuplicateData(IndexDataCreateRequest request, IndexInfo indexInfo) {
-    boolean exists = indexDataRepository.existsByIndexInfoAndBaseDateAndIsDeleted(indexInfo,
-        request.baseDate(), DeletedStatus.ACTIVE);
-    if (exists) {
-      throw new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND);
-    }
   }
 }

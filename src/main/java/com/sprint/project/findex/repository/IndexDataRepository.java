@@ -1,6 +1,5 @@
 package com.sprint.project.findex.repository;
 
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import java.time.LocalDate;
@@ -13,9 +12,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
     IndexDataQDSLRepository {
-  boolean existsByIndexInfoAndBaseDateAndIsDeleted(IndexInfo indexInfo, LocalDate baseDate, DeletedStatus deletedStatus);
+  boolean existsByIndexInfoAndBaseDate(IndexInfo indexInfo, LocalDate baseDate);
 
-  Optional<IndexData> findByIdAndIsDeleted(Long id, DeletedStatus isDeleted);
+
 
   @EntityGraph(attributePaths = "indexInfo")
   Optional<IndexData> findTopByIndexInfoOrderByBaseDateDesc(IndexInfo indexInfo);
@@ -33,8 +32,7 @@ public interface IndexDataRepository extends JpaRepository<IndexData, Long>,
     LocalDate getLastDate();
   }
 
-  List<IndexData> findByIndexInfoAndBaseDateBetweenAndIsDeleted(IndexInfo indexInfo,
+  List<IndexData> findByIndexInfoAndBaseDateBetween(IndexInfo indexInfo,
       LocalDate fromDate,
-      LocalDate toDate,
-      DeletedStatus deletedStatus);
+      LocalDate toDate);
 }

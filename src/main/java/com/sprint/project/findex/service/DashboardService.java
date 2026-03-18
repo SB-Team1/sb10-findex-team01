@@ -5,7 +5,6 @@ import com.sprint.project.findex.dto.dashboard.IndexChartDto;
 import com.sprint.project.findex.dto.dashboard.Items;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankingRequest;
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.global.exception.ApiException;

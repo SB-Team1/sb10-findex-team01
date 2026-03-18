@@ -68,10 +68,6 @@ public class IndexData extends BaseEntity {
   @Column(nullable = false)
   private BigInteger marketTotalAmount;
 
-  @Column(nullable = false)
-  @Enumerated(value = EnumType.STRING)
-  private DeletedStatus isDeleted;
-
   @Builder
   public IndexData(
       IndexInfo indexInfo,
@@ -85,8 +81,7 @@ public class IndexData extends BaseEntity {
       Double fluctuationRate,
       Long tradingQuantity,
       BigInteger tradingPrice,
-      BigInteger marketTotalAmount,
-      DeletedStatus isDeleted
+      BigInteger marketTotalAmount
   ) {
     this.indexInfo = indexInfo;
     this.baseDate = baseDate;
@@ -100,7 +95,6 @@ public class IndexData extends BaseEntity {
     this.tradingQuantity = tradingQuantity;
     this.tradingPrice = tradingPrice;
     this.marketTotalAmount = marketTotalAmount;
-    this.isDeleted = isDeleted;
   }
 
   public void update(IndexDataUpdateRequest request) {
@@ -132,9 +126,5 @@ public class IndexData extends BaseEntity {
         val -> this.tradingPrice = val);
     updateIfChanged(this.marketTotalAmount, stockIndexDto.marketTotalAmount(),
         val -> this.marketTotalAmount = val);
-  }
-
-  public void updateIsDeleted(DeletedStatus isDeleted) {
-    this.isDeleted = isDeleted;
   }
 }

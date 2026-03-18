@@ -7,6 +7,8 @@ import com.sprint.project.findex.dto.indexinfo.IndexInfoDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.sprint.project.findex.entity.IndexInfo;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.IndexInfoMapper;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import java.util.List;
@@ -30,19 +32,21 @@ public class IndexInfoService {
 
   @Transactional(readOnly = true)
   public IndexInfoDto find(Long id) {
-    // todo: exception
-    IndexInfo indexInfo = indexInfoRepository.findById(id).orElseThrow();
+    IndexInfo indexInfo = indexInfoRepository.findById(id)
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_INFO_ID_NOT_FOUND));
     return indexInfoMapper.toDto(indexInfo);
   }
 
   public void delete(Long id) {
-    // todo: IllegalArgumentException, OptimisticLockingFailureException
-    indexInfoRepository.deleteById(id);
+    // todo: OptimisticLockingFailureException
+    IndexInfo indexInfo = indexInfoRepository.findById(id)
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_INFO_ID_NOT_FOUND));
+    indexInfoRepository.delete(indexInfo);
   }
 
   public IndexInfoDto update(Long id, IndexInfoUpdateRequest request) {
-    // todo: exception
-    IndexInfo indexInfo = indexInfoRepository.findById(id).orElseThrow();
+    IndexInfo indexInfo = indexInfoRepository.findById(id)
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_INFO_ID_NOT_FOUND));
     indexInfo.update(request);
     return indexInfoMapper.toDto(indexInfo);
   }

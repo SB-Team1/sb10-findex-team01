@@ -16,6 +16,6 @@ public interface IndexInfoRepository extends JpaRepository<IndexInfo, Long>,
   Optional<IndexInfo> findByIndexClassificationAndIndexName(String indexClassification,
       String indexName);
 
-  @Query("SELECT i FROM IndexInfo i WHERE CONCAT(i.indexClassification, '_', i.indexName) IN :keys AND i.isDeleted = 'ACTIVE'")
+  @Query("SELECT i FROM IndexInfo i WHERE CONCAT(i.indexClassification, '_', i.indexName) IN :keys")
   List<IndexInfo> findByKeyIn(@Param("keys") List<String> keys);
 }

@@ -45,11 +45,6 @@ public class IndexInfo extends BaseEntity {
   @Column
   private boolean favorite;
 
-  @Builder.Default
-  @Column(nullable = false)
-  @Enumerated(value = EnumType.STRING)
-  private DeletedStatus isDeleted = DeletedStatus.ACTIVE;
-
   public void update(IndexInfoUpdateRequest request) {
     updateIfChanged(employedItemsCount, request.employedItemsCount(),
         val -> employedItemsCount = val);

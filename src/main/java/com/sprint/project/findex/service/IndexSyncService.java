@@ -6,7 +6,6 @@ import com.sprint.project.findex.dto.openapi.StockMarketIndexRequest;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse.StockIndexDto;
 import com.sprint.project.findex.dto.syncjob.IndexDataSyncRequest;
-import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SourceType;
@@ -51,9 +50,8 @@ public class IndexSyncService {
     List<SyncJob> syncJobs = new ArrayList<>();
 
     // 현재 지수 정보에 대항하는 지수 데이터 미리 불러오기
-    Map<String, IndexData> indexDataMap = indexDataRepository.findByIndexInfoAndBaseDateBetweenAndIsDeleted(
-            indexInfo, indexDataSyncRequest.baseDateFrom(), indexDataSyncRequest.baseDateTo(),
-            DeletedStatus.ACTIVE)
+    Map<String, IndexData> indexDataMap = indexDataRepository.findByIndexInfoAndBaseDateBetween(
+            indexInfo, indexDataSyncRequest.baseDateFrom(), indexDataSyncRequest.baseDateTo())
         .stream().collect(Collectors.toMap(
             idxData -> idxData.getIndexInfo().getId() + "_" + idxData.getBaseDate(),
             Function.identity()
@@ -145,7 +143,6 @@ public class IndexSyncService {
           .tradingPrice(dto.tradingPrice())
           .tradingQuantity(dto.tradingQuantity())
           .marketTotalAmount(dto.marketTotalAmount())
-          .isDeleted(DeletedStatus.ACTIVE)
           .build();
 
       toInsert.add(indexData);
