@@ -80,7 +80,6 @@ public class PersistentWorker {
             .build();
         toInsert.add(indexInfo);
         indexInfoMap.put(key, indexInfo);
-        autoSyncConfigService.create(indexInfo);
       }
 
       syncJobs.add(
@@ -92,6 +91,7 @@ public class PersistentWorker {
     indexInfoRepository.flush();
 
     syncJobRepository.saveAll(syncJobs);
+    autoSyncConfigService.createAll(toInsert);
 
     return syncJobs;
   }
