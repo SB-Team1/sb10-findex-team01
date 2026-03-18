@@ -39,7 +39,7 @@ CREATE TABLE sync_jobs
 (
   id            SERIAL PRIMARY KEY,
   job_type      VARCHAR(10) NOT NULL CHECK (job_type IN ('INDEX_INFO', 'INDEX_DATA')),
-  index_info_id int         NOT NULL,
+  index_info_id int,
   target_date   date,
   worker        VARCHAR(15) NOT NULL,
   job_time      timestamptz NOT NULL,
@@ -61,9 +61,9 @@ ALTER TABLE index_datas
 
 ALTER TABLE sync_jobs
   ADD CONSTRAINT fk_sync_jobs_index_info_id
-    FOREIGN KEY (index_info_id) REFERENCES index_infos (id);
+    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE SET NULL;
 
 ALTER TABLE auto_sync_configs
   ADD CONSTRAINT fk_auto_sync_configs_index_info_id
-    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE SET NULL,
-  ADD CONSTRAINT uk_auto_sync_configs_index_info_id UNIQUE (index_info_id);
+    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE CASCADE,
+    ADD CONSTRAINT uk_auto_sync_configs_index_info_id UNIQUE (index_info_id);

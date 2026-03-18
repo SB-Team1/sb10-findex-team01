@@ -9,12 +9,13 @@ import com.sprint.project.findex.dto.syncjob.SyncJobDto;
 import com.sprint.project.findex.dto.syncjob.SyncJobRequestQuery;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SyncJob;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.SyncJobMapper;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.SyncJobRepository;
 import com.sprint.project.findex.service.openapi.internal.PersistentWorker;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -146,19 +147,28 @@ public class SyncJobService {
         .build();
   }
 
-
-  // 오늘 이전의 가장 마지막 평일 구하기
-  // todo: 정확히는 OpenAPI에서 유효한 값을 줄 수 있는 마지막 날짜를 구하도록 바꿔야할 것 같습니다.
+  // OpenAPI에서 유효한 값을 줄 수 있는 가장 최신의 날짜 구하기
   private LocalDate getLastWeekday() {
-    LocalDate yesterday = LocalDate.now().minusDays(1);
+    LocalDate baseDate = LocalDate.now();
+    LocalDate minimumDate = baseDate.minusDays(14); // 14일 전까지만 확인함
 
-    LocalDate lastWeekday = yesterday;
-    if (yesterday.getDayOfWeek() == DayOfWeek.SATURDAY) {
-      lastWeekday = yesterday.minusDays(1);
-    } else if (yesterday.getDayOfWeek() == DayOfWeek.SUNDAY) {
-      lastWeekday = yesterday.minusDays(2);
+    while (!baseDate.isBefore(minimumDate)) {
+      StockMarketIndexResponse stockMarketIndexResponse = indexSyncService.fetchStockIndex(
+          StockMarketIndexRequest.builder()
+              .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+              .build()
+      );
+
+      List<StockIndexDto> responseItems = indexSyncService.extractDtoListFromResponse(
+          stockMarketIndexResponse);
+
+      if (responseItems != null && !responseItems.isEmpty()) {
+        return baseDate;
+      }
+
+      baseDate = baseDate.minusDays(1);
     }
 
-    return lastWeekday;
+    throw new ApiException(ErrorCode.VALID_BASE_DATE_NOT_FOUND);
   }
 }
