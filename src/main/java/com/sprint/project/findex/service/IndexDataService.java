@@ -9,6 +9,8 @@ import com.sprint.project.findex.entity.DeletedStatus;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SourceType;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.IndexDataMapper;
 import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
@@ -32,7 +34,7 @@ public class IndexDataService {
 
     //todo 임시로 findById를 호출하고 있음, 추후 Soft Delete 로직 적용 시 달라질 수 있음
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
-        .orElseThrow(() -> new NoSuchElementException("지수 정보를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_INFO_ID_NOT_FOUND));
 
     validateDuplicateData(request, indexInfo);
 
@@ -59,7 +61,7 @@ public class IndexDataService {
 
   public IndexDataDto update(Long id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
-        .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND));
     indexData.update(request);
 
     return indexDataMapper.toDto(indexData);
@@ -67,7 +69,7 @@ public class IndexDataService {
 
   public void delete(Long id) {
     IndexData indexData = indexDataRepository.findByIdAndIsDeleted(id, DeletedStatus.ACTIVE)
-        .orElseThrow(() -> new NoSuchElementException("지수 데이터를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND));
     indexData.updateIsDeleted(DeletedStatus.DELETED);
   }
 
@@ -105,7 +107,7 @@ public class IndexDataService {
     boolean exists = indexDataRepository.existsByIndexInfoAndBaseDateAndIsDeleted(indexInfo,
         request.baseDate(), DeletedStatus.ACTIVE);
     if (exists) {
-      throw new IllegalArgumentException("이미 존재하는 지수 데이터 입니다.");
+      throw new ApiException(ErrorCode.INDEX_DATA_NOT_FOUND);
     }
   }
 }

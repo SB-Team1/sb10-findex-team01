@@ -15,6 +15,8 @@ public enum ErrorCode {
   EXTERNAL_API_ERROR(500, "외부 API 호출에 실패했습니다."),
   DATABASE_ERROR(500, "데이터베이스 처리 중 오류가 발생했습니다."),
   OPEN_API_REQUEST_FAILED(500, "Open API 데이터 요청에 실패하였습니다.(%s)"),
+  OPEN_API_INVALID_RESPONSE(500, "Open API의 응답 형식이 잘못되었습니다."),
+  FILE_EXPORT_FAILED(500, "파일 추출 및 다운로드 처리 중 서버 오류가 발생했습니다."),
 
   // =========================
   // 400 BAD REQUEST
@@ -37,6 +39,7 @@ public enum ErrorCode {
   // 409 CONFLICT
   // =========================
   INDEX_INFO_ALREADY_EXISTS(409, "이미 존재하는 지수 정보입니다."),
+  INDEX_DATA_ALREADY_EXISTS(409, "이미 존재하는 지수 데이터입니다."),
   ;
 
   private final int status;

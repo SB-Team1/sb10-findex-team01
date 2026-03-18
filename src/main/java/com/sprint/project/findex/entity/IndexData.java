@@ -1,12 +1,14 @@
 package com.sprint.project.findex.entity;
 
 import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
+import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse.StockIndexDto;
 import com.sprint.project.findex.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -28,7 +30,7 @@ public class IndexData extends BaseEntity {
 
   //지수 정보
   @Setter
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "index_info_id")
   private IndexInfo indexInfo;
   //기준 일자
@@ -107,11 +109,29 @@ public class IndexData extends BaseEntity {
     updateIfChanged(this.highPrice, request.highPrice(), val -> this.highPrice = val);
     updateIfChanged(this.lowPrice, request.lowPrice(), val -> this.lowPrice = val);
     updateIfChanged(this.versus, request.versus(), val -> this.versus = val);
-    updateIfChanged(this.fluctuationRate, request.fluctuationRate(), val -> this.fluctuationRate = val);
-    updateIfChanged(this.tradingQuantity, request.tradingQuantity(), val -> this.tradingQuantity = val);
+    updateIfChanged(this.fluctuationRate, request.fluctuationRate(),
+        val -> this.fluctuationRate = val);
+    updateIfChanged(this.tradingQuantity, request.tradingQuantity(),
+        val -> this.tradingQuantity = val);
     updateIfChanged(this.tradingPrice, request.tradingPrice(), val -> this.tradingPrice = val);
-    updateIfChanged(this.marketTotalAmount, request.marketTotalAmount(), val -> this.marketTotalAmount = val);
+    updateIfChanged(this.marketTotalAmount, request.marketTotalAmount(),
+        val -> this.marketTotalAmount = val);
     this.sourceType = SourceType.USER;
+  }
+
+  public void update(StockIndexDto stockIndexDto) {
+    updateIfChanged(this.marketPrice, stockIndexDto.marketPrice(), val -> this.marketPrice = val);
+    updateIfChanged(this.closingPrice, stockIndexDto.closingPrice(),
+        val -> this.closingPrice = val);
+    updateIfChanged(this.highPrice, stockIndexDto.highPrice(), val -> this.highPrice = val);
+    updateIfChanged(this.lowPrice, stockIndexDto.lowPrice(), val -> this.lowPrice = val);
+    updateIfChanged(this.versus, stockIndexDto.versus(), val -> this.versus = val);
+    updateIfChanged(this.fluctuationRate, stockIndexDto.fluctuationRate(),
+        val -> this.fluctuationRate = val);
+    updateIfChanged(this.tradingPrice, stockIndexDto.tradingPrice(),
+        val -> this.tradingPrice = val);
+    updateIfChanged(this.marketTotalAmount, stockIndexDto.marketTotalAmount(),
+        val -> this.marketTotalAmount = val);
   }
 
   public void updateIsDeleted(DeletedStatus isDeleted) {

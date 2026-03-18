@@ -1,21 +1,31 @@
 package com.sprint.project.findex.controller;
 
+import com.sprint.project.findex.dto.dashboard.IndexChartDto;
 import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
 import com.sprint.project.findex.dto.indexdata.CursorPageResponseIndexDataDto;
 import com.sprint.project.findex.dto.indexdata.IndexDataCreateRequest;
+import com.sprint.project.findex.dto.indexdata.IndexDataCsvExportRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataDto;
 import com.sprint.project.findex.dto.indexdata.IndexDataUpdateRequest;
-import com.sprint.project.findex.dto.dashboard.IndexChartDto;
 import com.sprint.project.findex.dto.dashboard.IndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankedIndexPerformanceDto;
 import com.sprint.project.findex.dto.dashboard.RankingRequest;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
+import com.sprint.project.findex.service.CsvExportService;
 import com.sprint.project.findex.service.DashboardService;
 import com.sprint.project.findex.service.IndexDataService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import java.io.IOException;
+import java.io.Writer;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +49,7 @@ public class IndexDataController {
 
   private final IndexDataService indexDataService;
   private final DashboardService dashboardService;
+  private final CsvExportService csvExportService;
 
   @PostMapping
   @Operation(summary = "지수 데이터 등록")
@@ -106,5 +117,22 @@ public class IndexDataController {
     IndexChartDto dto = dashboardService.findIndexChart(id, periodType);
 
     return ResponseEntity.status(HttpStatus.OK).body(dto);
+  }
+
+  @GetMapping(value = "/export/csv")
+  @Operation(summary = "지수 데이터 CSV export")
+  public void exportCsv(
+      @ModelAttribute IndexDataCsvExportRequest request,
+      HttpServletResponse response
+  ) {
+    String fileName = "index-data-" + LocalDate.now() + ".csv";
+    response.setContentType("text/csv; charset=UTF-8");
+    response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+    try (Writer writer = response.getWriter()) {
+      csvExportService.exportToCsv(writer, request);
+    } catch (IOException e) {
+      throw new ApiException(ErrorCode.FILE_EXPORT_FAILED);
+    }
   }
 }
