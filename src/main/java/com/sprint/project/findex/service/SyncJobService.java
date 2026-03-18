@@ -123,9 +123,13 @@ public class SyncJobService {
 
       if (hasNext) {
         nextIdAfter = lastItem.getId();
-        nextCursor = "jobTime".equals(query.sortField())
-            ? lastItem.getJobTime().toString()
-            : lastItem.getTargetDate().toString();
+
+        if ("jobTime".equals(query.sortField())) {
+          nextCursor = lastItem.getJobTime().toString();
+        } else {
+          LocalDate targetDate = lastItem.getTargetDate();
+          nextCursor = (targetDate != null) ? targetDate.toString() : null;
+        }
       }
     }
 
