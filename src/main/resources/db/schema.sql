@@ -65,5 +65,5 @@ ALTER TABLE sync_jobs
 
 ALTER TABLE auto_sync_configs
   ADD CONSTRAINT fk_auto_sync_configs_index_info_id
-    FOREIGN KEY (index_info_id) REFERENCES index_infos (id),
+    FOREIGN KEY (index_info_id) REFERENCES index_infos (id) ON DELETE SET NULL,
   ADD CONSTRAINT uk_auto_sync_configs_index_info_id UNIQUE (index_info_id);
