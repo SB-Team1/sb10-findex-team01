@@ -15,6 +15,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc.batch_size: 500
+        order_inserts: true
+        order_updates: true
+
     defer-datasource-initialization: true
     open-in-view: false
 
@@ -22,4 +26,5 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
-    org.hibernate.orm.jdbc.extract: trace
+    org.hibernate.orm.jdbc.extract: info
+    org.springframework.web.reactive.function.client.WebClient: DEBUG
