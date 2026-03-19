@@ -157,13 +157,12 @@ public class SyncJobService {
     LocalDate baseDate = LocalDate.now().minusDays(1);
     LocalDate minimumDate = baseDate.minusDays(30); // 30일 전까지만 확인함
 
-    StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
-        .pageNo(1)
-        .numOfRows(10)
-        .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
-        .build();
-
     while (!baseDate.isBefore(minimumDate)) {
+      // api 요청 파라미터 설정
+      StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
+          .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+          .build();
+
       StockMarketIndexResponse stockMarketIndexResponse = indexSyncService.fetchStockIndex(
           stockMarketIndexRequest
       );
