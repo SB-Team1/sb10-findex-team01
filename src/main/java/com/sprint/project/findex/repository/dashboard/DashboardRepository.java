@@ -174,7 +174,7 @@ public interface DashboardRepository extends JpaRepository<IndexData, Long> {
     FROM ma_calculated m
     JOIN range_start r ON TRUE
     WHERE m.base_date >= r.start_date
-    ORDER BY m.base_date
+    ORDER BY m.base_date DESC
     """, nativeQuery = true)
   // dto로 바로 매핑이 어렵기 때문에 한 행(row)을 Object 배열로 받음
   List<Object[]> findIndexChartData(
