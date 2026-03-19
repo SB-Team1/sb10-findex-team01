@@ -47,8 +47,10 @@ public class SyncJobService {
     Map<String, IndexInfo> indexInfoMap = indexInfoRepository.findAll()
         .stream()
         .collect(Collectors.toMap(
-            idxInfo -> idxInfo.getIndexClassification() + "_" + idxInfo.getIndexName(),
-            Function.identity()
+            indexInfo -> createIndexInfoKey(indexInfo.getIndexName(),
+                indexInfo.getIndexClassification()),
+            Function.identity(),
+            (existing, duplicate) -> existing // 중복키 입력 무시
         ));
 
     boolean hasMore = true;
@@ -82,7 +84,6 @@ public class SyncJobService {
         .map(syncJobMapper::toDto)
         .toList();
   }
-
 
   public List<SyncJobDto> syncIndexData(IndexDataSyncRequest indexDataSyncRequest,
       HttpServletRequest request) {
@@ -179,5 +180,9 @@ public class SyncJobService {
 
     // exception 대신 오늘 날짜 리턴하도록 함
     return LocalDate.now();
+  }
+
+  private String createIndexInfoKey(String indexName, String indexClassification) {
+    return indexName + "_" + indexClassification;
   }
 }

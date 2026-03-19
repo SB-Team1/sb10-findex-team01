@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class PersistentWorker {
 
+  public static final int CHUNK_SIZE = 5000;
   private final IndexInfoMapper indexInfoMapper;
   private final IndexDataMapper indexDataMapper;
   private final AutoSyncConfigService autoSyncConfigService;
@@ -38,7 +39,6 @@ public class PersistentWorker {
   private final IndexDataRepository indexDataRepository;
   private final SyncJobRepository syncJobRepository;
   private final JdbcTemplate jdbcTemplate;
-  public static final int CHUNK_SIZE = 5000;
 
   @Transactional
   public void save(List<StockIndexDto> stockIndexDtos) {
@@ -62,8 +62,7 @@ public class PersistentWorker {
     List<SyncJob> syncJobs = new ArrayList<>();
 
     for (StockIndexDto dto : dtos) {
-      String key = dto.indexClassification() + "_" + dto.indexName();
-
+      String key = createIndexInfoKey(dto.indexName(), dto.indexClassification());
       IndexInfo indexInfo = indexInfoMap.get(key);
 
       if (indexInfo != null) {
@@ -88,8 +87,6 @@ public class PersistentWorker {
     }
 
     indexInfoRepository.saveAll(toInsert);
-    indexInfoRepository.flush();
-
     syncJobRepository.saveAll(syncJobs);
     autoSyncConfigService.createAll(toInsert);
 
@@ -98,15 +95,17 @@ public class PersistentWorker {
 
   @Transactional
   public void saveIndexDataBatch(List<StockIndexDto> dtos, IndexInfo indexInfo) {
-    if (dtos.isEmpty()) return;
+    if (dtos.isEmpty()) {
+      return;
+    }
 
     String sql = """
-            INSERT INTO index_datas
-            (base_date, closing_price, fluctuation_rate, high_price,
-            index_info_id, is_deleted, low_price, market_price, market_total_amount,
-            source_type, trading_price, trading_quantity, versus, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-            """;
+        INSERT INTO index_datas
+        (base_date, closing_price, fluctuation_rate, high_price,
+        index_info_id, is_deleted, low_price, market_price, market_total_amount,
+        source_type, trading_price, trading_quantity, versus, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        """;
 
     int total = dtos.size();
     for (int from = 0; from < total; from += CHUNK_SIZE) {
@@ -132,7 +131,9 @@ public class PersistentWorker {
   }
 
   public Map<Long, LocalDate> findLastSyncDatesBulk(List<AutoSyncConfig> configs) {
-    if (configs.isEmpty()) return new HashMap<>();
+    if (configs.isEmpty()) {
+      return new HashMap<>();
+    }
 
     // 파라미터를 넘기는 대신, 쿼리 내부에서 JOIN으로 처리하는 메서드 호출
     List<SyncJobRepository.LastSyncDateProjection> results =
@@ -160,5 +161,9 @@ public class PersistentWorker {
             .atZone(ZoneId.systemDefault())
             .toLocalDate()
         );
+  }
+
+  private String createIndexInfoKey(String indexName, String indexClassification) {
+    return indexName + "_" + indexClassification;
   }
 }

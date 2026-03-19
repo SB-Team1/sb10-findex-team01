@@ -53,7 +53,7 @@ public class IndexSyncService {
     Map<String, IndexData> indexDataMap = indexDataRepository.findByIndexInfoAndBaseDateBetween(
             indexInfo, indexDataSyncRequest.baseDateFrom(), indexDataSyncRequest.baseDateTo())
         .stream().collect(Collectors.toMap(
-            idxData -> idxData.getIndexInfo().getId() + "_" + idxData.getBaseDate(),
+            idxData -> createIndexDataKey(idxData.getIndexInfo().getId(), idxData.getBaseDate()),
             Function.identity()
         ));
 
@@ -124,7 +124,7 @@ public class IndexSyncService {
       String requestIpAddr
   ) {
 
-    String key = indexInfo.getId() + "_" + targetDate;
+    String key = createIndexDataKey(indexInfo.getId(), targetDate);
     IndexData indexData = indexDataMap.get(key);
 
     if (indexData != null) {
@@ -207,5 +207,9 @@ public class IndexSyncService {
     }
 
     return stockIndexDtoList.get(0);
+  }
+
+  private String createIndexDataKey(Long id, LocalDate targetDate) {
+    return id + "_" + targetDate;
   }
 }
