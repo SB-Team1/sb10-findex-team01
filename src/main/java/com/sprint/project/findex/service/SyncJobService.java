@@ -1,5 +1,7 @@
 package com.sprint.project.findex.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexRequest;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse;
 import com.sprint.project.findex.dto.openapi.StockMarketIndexResponse.StockIndexDto;
@@ -7,13 +9,20 @@ import com.sprint.project.findex.dto.syncjob.CursorPageResponseSyncJobDto;
 import com.sprint.project.findex.dto.syncjob.IndexDataSyncRequest;
 import com.sprint.project.findex.dto.syncjob.SyncJobDto;
 import com.sprint.project.findex.dto.syncjob.SyncJobRequestQuery;
+import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SyncJob;
+import com.sprint.project.findex.global.exception.ApiException;
+import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.SyncJobMapper;
+import com.sprint.project.findex.repository.IndexDataRepository;
 import com.sprint.project.findex.repository.IndexInfoRepository;
 import com.sprint.project.findex.repository.SyncJobRepository;
 import com.sprint.project.findex.service.openapi.internal.PersistentWorker;
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -24,6 +33,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +41,14 @@ public class SyncJobService {
 
   private final IndexSyncService indexSyncService;
   private final IndexInfoRepository indexInfoRepository;
+  private final IndexDataRepository indexDataRepository;
   private final SyncJobRepository syncJobRepository;
   private final SyncJobMapper syncJobMapper;
+  private final ObjectMapper objectMapper;
   private final PersistentWorker worker;
+  private final WebClient openapi;
+
+  private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.BASIC_ISO_DATE;
 
 
   // 가장 최신의 지수 정보를 로드해 저장합니다.
@@ -57,7 +72,7 @@ public class SyncJobService {
     int pageNo = 1;
 
     while (hasMore) {
-      StockMarketIndexResponse openApiResponse = indexSyncService.fetchStockIndex(
+      StockMarketIndexResponse openApiResponse = fetchStockIndex(
           StockMarketIndexRequest.builder()
               .pageNo(pageNo)
               .numOfRows(50)
@@ -89,14 +104,30 @@ public class SyncJobService {
       HttpServletRequest request) {
 
     List<SyncJob> response = new ArrayList<>();
-    List<IndexInfo> indexInfos = indexInfoRepository.findByIdIn(
-        indexDataSyncRequest.indexInfoIds());
     String requestIpAddr = request.getRemoteAddr();
 
-    // 지수 정보를 바탕으로 Open API로부터 지수 데이터 연동 작업을 한다.
+    List<IndexInfo> indexInfos = indexInfoRepository.findByIdIn(
+        indexDataSyncRequest.indexInfoIds());
+
     for (IndexInfo indexInfo : indexInfos) {
+      // 현재 지수 정보에 대항하는 지수 데이터 미리 불러오기
+      Map<String, IndexData> indexDataMap = indexDataRepository.findByIndexInfoAndBaseDateBetween(
+              indexInfo, indexDataSyncRequest.baseDateFrom(), indexDataSyncRequest.baseDateTo())
+          .stream().collect(Collectors.toMap(
+              idxData -> createIndexDataKey(idxData.getIndexInfo().getId(), idxData.getBaseDate()),
+              Function.identity()
+          ));
+
+      // 조건에 맞는 지수 데이터 받아오기
+      LocalDate baseDateFrom = indexDataSyncRequest.baseDateFrom();
+      LocalDate baseDateTo = indexDataSyncRequest.baseDateTo();
+      List<StockIndexDto> stockIndexDtos = getIndexDataFromOpenAPI(indexInfo, baseDateFrom,
+          baseDateTo);
+
+      // 영속화
       response.addAll(
-          indexSyncService.syncIndexData(indexDataSyncRequest, indexInfo, requestIpAddr)
+          indexSyncService.saveIndexDataAndSyncJobs(indexDataMap, stockIndexDtos, indexInfo,
+              requestIpAddr)
       );
     }
 
@@ -164,7 +195,7 @@ public class SyncJobService {
         .build();
 
     while (!baseDate.isBefore(minimumDate)) {
-      StockMarketIndexResponse stockMarketIndexResponse = indexSyncService.fetchStockIndex(
+      StockMarketIndexResponse stockMarketIndexResponse = fetchStockIndex(
           stockMarketIndexRequest
       );
 
@@ -184,5 +215,115 @@ public class SyncJobService {
 
   private String createIndexInfoKey(String indexName, String indexClassification) {
     return indexName + "_" + indexClassification;
+  }
+
+  public StockMarketIndexResponse fetchStockIndex(StockMarketIndexRequest request) {
+    Map<String, Object> queryParams = objectMapper.convertValue(request, new TypeReference<>() {
+    });
+
+    try {
+      return openapi.get()
+          .uri(uriBuilder -> {
+            queryParams.forEach((k, v) -> {
+              if (v != null) {
+                uriBuilder.queryParam(k, URLEncoder.encode(v.toString(), StandardCharsets.UTF_8));
+              }
+            });
+            return uriBuilder.build();
+          })
+          .retrieve()
+          .bodyToMono(StockMarketIndexResponse.class)
+          .block(Duration.ofSeconds(5));
+
+    } catch (Exception e) {
+      throw new ApiException(ErrorCode.OPEN_API_REQUEST_FAILED, e.getMessage());
+    }
+  }
+
+  public List<StockIndexDto> extractDtoListFromResponse(StockMarketIndexResponse response) {
+    // 응답 형태가 맞지 않은 경우
+    if (response == null ||
+        response.response() == null ||
+        response.response().body() == null ||
+        response.response().body().items() == null ||
+        response.response().body().items().item() == null) {
+      throw new ApiException(ErrorCode.OPEN_API_INVALID_RESPONSE);
+    }
+
+    // 에러코드가 온 경우
+    if (!"00".equals(response.response().header().resultCode())) {
+      throw new ApiException(ErrorCode.OPEN_API_INVALID_RESPONSE);
+    }
+
+    return response.response().body().items().item();
+  }
+
+  // 응답 item에서 첫번째 값만 가져온다
+  private StockIndexDto extractDtoFromResponse(StockMarketIndexResponse response)
+      throws ApiException {
+    List<StockIndexDto> stockIndexDtoList = this.extractDtoListFromResponse(response);
+
+    if (stockIndexDtoList.isEmpty()) {
+      return null;
+    }
+
+    return stockIndexDtoList.get(0);
+  }
+
+  private int getTotalCount(StockMarketIndexResponse stockMarketIndexResponse) {
+    return stockMarketIndexResponse.response().body().totalCount();
+
+  }
+
+  private List<StockIndexDto> getIndexDataFromOpenAPI(IndexInfo indexInfo, LocalDate baseDateFrom,
+      LocalDate baseDateTo) {
+    // openapi로부터 빈 리스트가 올 때까지 반복적으로 받기
+    List<StockIndexDto> stockIndexDtos = new ArrayList<>();
+
+    int pageNo = 1;
+    int numOfRows = 30;
+
+    // 최초 호출
+    StockMarketIndexResponse firstResponse = fetchStockIndex(
+        StockMarketIndexRequest.builder()
+            .pageNo(pageNo)
+            .numOfRows(numOfRows)
+            .indexName(indexInfo.getIndexName())
+            .beginEmployedItemsCount(indexInfo.getEmployedItemsCount())
+            .endEmployedItemsCount(indexInfo.getEmployedItemsCount() + 1)
+            .beginBaseDate(baseDateFrom.format(dateTimeFormatter))
+            .endBaseDate(baseDateTo.format(dateTimeFormatter))
+            .build()
+    );
+    List<StockIndexDto> firstItems = extractDtoListFromResponse(firstResponse);
+    stockIndexDtos.addAll(firstItems);
+
+    // 반복 호출 횟수 계산
+    int totalCount = getTotalCount(firstResponse);
+    int totalPages = (int) Math.ceil((double) totalCount / numOfRows);
+
+    // 나머지 데이터 요청
+    for (pageNo = 2; pageNo <= totalPages; pageNo++) {
+      StockMarketIndexResponse openApiResponse = fetchStockIndex(
+          StockMarketIndexRequest.builder()
+              .pageNo(pageNo)
+              .numOfRows(numOfRows)
+              .indexName(indexInfo.getIndexName())
+              .beginEmployedItemsCount(indexInfo.getEmployedItemsCount())
+              .endEmployedItemsCount(indexInfo.getEmployedItemsCount() + 1)
+              .beginBaseDate(baseDateFrom.format(dateTimeFormatter))
+              .endBaseDate(baseDateTo.format(dateTimeFormatter))
+              .build()
+      );
+
+      List<StockIndexDto> openApiResponseItems = extractDtoListFromResponse(openApiResponse);
+      stockIndexDtos.addAll(openApiResponseItems);
+    }
+
+    return stockIndexDtos;
+  }
+
+  private String createIndexDataKey(Long id, LocalDate targetDate) {
+    return id + "_" + targetDate;
   }
 }
