@@ -47,8 +47,10 @@ public class SyncJobService {
     Map<String, IndexInfo> indexInfoMap = indexInfoRepository.findAll()
         .stream()
         .collect(Collectors.toMap(
-            idxInfo -> idxInfo.getIndexClassification() + "_" + idxInfo.getIndexName(),
-            Function.identity()
+            indexInfo -> createIndexInfoKey(indexInfo.getIndexName(),
+                indexInfo.getIndexClassification()),
+            Function.identity(),
+            (existing, duplicate) -> existing // 중복키 입력 무시
         ));
 
     boolean hasMore = true;
@@ -82,7 +84,6 @@ public class SyncJobService {
         .map(syncJobMapper::toDto)
         .toList();
   }
-
 
   public List<SyncJobDto> syncIndexData(IndexDataSyncRequest indexDataSyncRequest,
       HttpServletRequest request) {
@@ -156,13 +157,12 @@ public class SyncJobService {
     LocalDate baseDate = LocalDate.now().minusDays(1);
     LocalDate minimumDate = baseDate.minusDays(30); // 30일 전까지만 확인함
 
-    StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
-        .pageNo(1)
-        .numOfRows(10)
-        .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
-        .build();
-
     while (!baseDate.isBefore(minimumDate)) {
+      // api 요청 파라미터 설정
+      StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
+          .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+          .build();
+
       StockMarketIndexResponse stockMarketIndexResponse = indexSyncService.fetchStockIndex(
           stockMarketIndexRequest
       );
@@ -179,5 +179,9 @@ public class SyncJobService {
 
     // exception 대신 오늘 날짜 리턴하도록 함
     return LocalDate.now();
+  }
+
+  private String createIndexInfoKey(String indexName, String indexClassification) {
+    return indexName + "_" + indexClassification;
   }
 }

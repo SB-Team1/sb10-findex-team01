@@ -2,13 +2,12 @@ package com.sprint.project.findex.repository.querydsl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.ComparablePath;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sprint.project.findex.dto.SortDirection;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoCursorPageRequest;
-import com.sprint.project.findex.dto.indexinfo.IndexInfoSortField;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.QIndexInfo;
@@ -39,13 +38,10 @@ public class IndexInfoQDSLRepositoryImpl implements IndexInfoQDSLRepository {
   public List<IndexInfo> findByCursor(IndexInfoCursorPageRequest request) {
     return queryFactory.selectFrom(qIndexInfo)
         .where(
-            predicateOrNull(qIndexInfo.id::gt, request.getIdAfter()),
-            predicateOrNull(qIndexInfo.indexName::eq, request.getIndexName()),
-            predicateOrNull(qIndexInfo.indexClassification::eq, request.getIndexClassification()),
-            predicateOrNull(qIndexInfo.favorite::eq, request.getFavorite()),
-            cursorOrNull(request)
+            condition(request),
+            predicateOrNull(qIndexInfo.favorite::eq, request.getFavorite())
         ).limit(request.getSize() + 1)
-        .orderBy(getOrderSpecifier(request.getSortField(), request.getSortDirection()))
+        .orderBy(getOrderSpecifier(request), getIdOrderSpecifier(request))
         .fetch();
   }
 
@@ -54,30 +50,64 @@ public class IndexInfoQDSLRepositoryImpl implements IndexInfoQDSLRepository {
     return queryFactory.select(qIndexInfo.id.count())
         .from(qIndexInfo)
         .where(
-            predicateOrNull(qIndexInfo.indexName::eq, request.getIndexName()),
-            predicateOrNull(qIndexInfo.indexClassification::eq, request.getIndexClassification()),
-            predicateOrNull(qIndexInfo.favorite::eq, request.getFavorite()),
-            cursorOrNull(request)
+            filter(request),
+            predicateOrNull(qIndexInfo.favorite::eq, request.getFavorite())
         )
         .fetchOne();
   }
 
-  private OrderSpecifier<?> getOrderSpecifier(IndexInfoSortField sortField,
-      SortDirection sortDirection) {
-    Order order = (sortDirection == SortDirection.ASC) ? Order.ASC : Order.DESC;
-    String fieldName = sortField.getName();
-    PathBuilder<IndexInfo> pathBuilder = new PathBuilder<>(IndexInfo.class, "indexInfo");
-    return new OrderSpecifier<>(order, pathBuilder.getComparable(fieldName, Comparable.class));
-  }
-
-  private Predicate cursorOrNull(IndexInfoCursorPageRequest request) {
-    if (request.getIndexClassification() == null) {
-      return predicateOrNull(qIndexInfo.indexClassification::eq, request.getCursor());
+  private BooleanExpression filter(IndexInfoCursorPageRequest request) {
+    if (request.getIndexClassification() != null) {
+      return qIndexInfo.indexClassification.containsIgnoreCase(request.getIndexClassification());
+    }
+    if (request.getIndexName() != null) {
+      return qIndexInfo.indexName.containsIgnoreCase(request.getIndexName());
     }
     return null;
   }
 
-  private <T> Predicate predicateOrNull(Function<T, Predicate> action, T value) {
+  private BooleanExpression condition(IndexInfoCursorPageRequest request) {
+    BooleanExpression searchFilter = filter(request);
+    if (searchFilter == null) {
+      return conditionByCursor(request);
+    }
+    return searchFilter;
+  }
+
+  private BooleanExpression conditionByCursor(IndexInfoCursorPageRequest request) {
+    String cursor = request.getCursor();
+    Long idAfter = request.getIdAfter();
+    if (cursor == null || idAfter == null) {
+      return null;
+    }
+    PathBuilder<IndexInfo> pathBuilder = new PathBuilder<>(IndexInfo.class, "indexInfo");
+    ComparablePath<String> path = pathBuilder.getComparable(request.getSortField().getName(),
+        String.class);
+    if (request.getSortDirection() == Order.DESC) {
+      return path.lt(cursor)
+          .or(path.eq(cursor)
+              .and(qIndexInfo.id.loe(idAfter)));
+    }
+    return path.gt(cursor)
+        .or(path.eq(cursor)
+            .and(qIndexInfo.id.goe(idAfter)));
+  }
+
+  private OrderSpecifier<?> getOrderSpecifier(IndexInfoCursorPageRequest request) {
+    String fieldName = request.getSortField().getName();
+    PathBuilder<IndexInfo> pathBuilder = new PathBuilder<>(IndexInfo.class, "indexInfo");
+    return new OrderSpecifier<>(request.getSortDirection(),
+        pathBuilder.getComparable(fieldName, Comparable.class));
+  }
+
+  private OrderSpecifier<?> getIdOrderSpecifier(IndexInfoCursorPageRequest request) {
+    if (request.getSortDirection() == Order.DESC) {
+      return qIndexInfo.id.desc();
+    }
+    return qIndexInfo.id.asc();
+  }
+
+  private <T> BooleanExpression predicateOrNull(Function<T, BooleanExpression> action, T value) {
     return Optional.ofNullable(value).map(action).orElse(null);
   }
 

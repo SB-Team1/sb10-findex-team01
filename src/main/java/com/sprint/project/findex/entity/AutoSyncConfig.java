@@ -1,44 +1,24 @@
 package com.sprint.project.findex.entity;
 
+import com.sprint.project.findex.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE) // 빌더를 위해 추가 (외부 노출 방지)
 @Builder
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Entity
 @Table(name = "auto_sync_configs")
-public class AutoSyncConfig {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
-
-  @CreatedDate
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt;
-
-  @LastModifiedDate
-  @Column(name = "updated_at", nullable = false)
-  private Instant updatedAt;
+public class AutoSyncConfig extends BaseEntity {
 
   // 지수 정보
   @OneToOne
@@ -46,18 +26,13 @@ public class AutoSyncConfig {
   private IndexInfo indexInfo;
 
   // 생성자
-  public AutoSyncConfig(Long Id, IndexInfo indexInfo){
-    this.id = Id;
-    this.indexInfo = indexInfo;
-    this.enabled = false;
-
-    this.createdAt = Instant.now();
-    this.updatedAt = createdAt;
-  }
-
   // 자동 연동 활성화
   @Column(name = "enabled", nullable = false)
-  private boolean enabled;
+  private boolean enabled = false;
+
+  public AutoSyncConfig(IndexInfo indexInfo){
+    this.indexInfo = indexInfo;
+  }
 
   public void updateEnabled(boolean enabled) {
     this.enabled = enabled;

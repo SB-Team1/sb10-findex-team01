@@ -33,10 +33,17 @@ public class AutoSyncConfigService {
       throw new ApiException(ErrorCode.INVALID_PARAMETER, "지수 정보가 존재하지 않습니다.");
     }
 
-    AutoSyncConfig autoSyncConfig = new AutoSyncConfig(null, indexInfo);
+    AutoSyncConfig autoSyncConfig = new AutoSyncConfig(indexInfo);
     AutoSyncConfig savedConfig = autoSyncConfigRepository.save(autoSyncConfig);
 
     return autoSyncConfigMapper.toDto(savedConfig);
+  }
+
+  public void createAll(List<IndexInfo> indexInfos) {
+    List<AutoSyncConfig> configs = indexInfos.stream()
+        .map(indexInfo -> AutoSyncConfig.builder().indexInfo(indexInfo).build())
+        .toList();
+    autoSyncConfigRepository.saveAll(configs);
   }
 
   @Transactional
