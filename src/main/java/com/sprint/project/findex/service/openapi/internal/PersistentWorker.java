@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -102,9 +101,11 @@ public class PersistentWorker {
     String sql = """
         INSERT INTO index_datas
         (base_date, closing_price, fluctuation_rate, high_price,
-        index_info_id, is_deleted, low_price, market_price, market_total_amount,
+        index_info_id, low_price, market_price, market_total_amount,
         source_type, trading_price, trading_quantity, versus, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ON CONFLICT (index_info_id, base_date)
+        DO NOTHING
         """;
 
     int total = dtos.size();
@@ -118,14 +119,13 @@ public class PersistentWorker {
         ps.setDouble(3, dto.fluctuationRate());
         ps.setDouble(4, dto.highPrice());
         ps.setLong(5, indexInfo.getId());
-        ps.setString(6, "ACTIVE");
-        ps.setDouble(7, dto.lowPrice());
-        ps.setDouble(8, dto.marketPrice());
-        ps.setBigDecimal(9, new BigDecimal(dto.marketTotalAmount().toString()));
-        ps.setString(10, "OPEN_API");
-        ps.setBigDecimal(11, new BigDecimal(dto.tradingPrice().toString()));
-        ps.setLong(12, dto.tradingQuantity());
-        ps.setDouble(13, dto.versus());
+        ps.setDouble(6, dto.lowPrice());
+        ps.setDouble(7, dto.marketPrice());
+        ps.setBigDecimal(8, new BigDecimal(dto.marketTotalAmount().toString()));
+        ps.setString(9, "OPEN_API");
+        ps.setBigDecimal(10, new BigDecimal(dto.tradingPrice().toString()));
+        ps.setLong(11, dto.tradingQuantity());
+        ps.setDouble(12, dto.versus());
       });
     }
   }
@@ -135,17 +135,17 @@ public class PersistentWorker {
       return new HashMap<>();
     }
 
-    // 파라미터를 넘기는 대신, 쿼리 내부에서 JOIN으로 처리하는 메서드 호출
     List<SyncJobRepository.LastSyncDateProjection> results =
         syncJobRepository.findLastSyncDatesEnabledOnly();
 
-    Map<Long, LocalDate> lastSyncMap = results.stream()
-        .collect(Collectors.toMap(
-            SyncJobRepository.LastSyncDateProjection::getIndexInfoId,
-            SyncJobRepository.LastSyncDateProjection::getLastDate
-        ));
+    Map<Long, LocalDate> lastSyncMap = new HashMap<>();
 
-    // 데이터가 없는 경우 기본값(시작 시점) 채워넣기
+    for (SyncJobRepository.LastSyncDateProjection res : results) {
+      if (res.getIndexInfoId() != null) {
+        lastSyncMap.put(res.getIndexInfoId(), res.getLastDate());
+      }
+    }
+
     for (AutoSyncConfig config : configs) {
       lastSyncMap.putIfAbsent(config.getIndexInfo().getId(),
           config.getIndexInfo().getBasePointInTime());
