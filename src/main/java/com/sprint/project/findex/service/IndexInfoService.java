@@ -11,7 +11,7 @@ import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.global.exception.ApiException;
 import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.IndexInfoMapper;
-import com.sprint.project.findex.repository.IndexInfoRepository;
+import com.sprint.project.findex.repository.indexinfo.IndexInfoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

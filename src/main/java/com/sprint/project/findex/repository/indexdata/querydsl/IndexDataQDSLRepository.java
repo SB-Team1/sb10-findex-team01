@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.indexdata.querydsl;
 
 import com.sprint.project.findex.dto.indexdata.CursorPageIndexDataRequest;
 import com.sprint.project.findex.dto.indexdata.IndexDataCsvExportRequest;

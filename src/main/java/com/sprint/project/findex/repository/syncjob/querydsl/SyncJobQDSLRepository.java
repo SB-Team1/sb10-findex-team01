@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.syncjob.querydsl;
 
 import com.sprint.project.findex.dto.syncjob.SyncJobRequestQuery;
 import com.sprint.project.findex.entity.SyncJob;

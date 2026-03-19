@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository.querydsl;
+package com.sprint.project.findex.repository.indexinfo.querydsl;
 
 import com.sprint.project.findex.dto.indexinfo.IndexInfoCursorPageRequest;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSummaryDto;

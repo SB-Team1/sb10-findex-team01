@@ -1,8 +1,8 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.dashboard;
 
 import com.sprint.project.findex.dto.dashboard.DashboardQueryDto;
 import com.sprint.project.findex.entity.IndexData;
-import com.sprint.project.findex.repository.projection.DashboardRankingProjection;
+import com.sprint.project.findex.repository.dashboard.projection.DashboardRankingProjection;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;

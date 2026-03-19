@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository.querydsl;
+package com.sprint.project.findex.repository.indexinfo.querydsl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
