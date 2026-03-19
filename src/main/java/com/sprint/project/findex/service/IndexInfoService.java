@@ -4,13 +4,14 @@ import com.sprint.project.findex.dto.indexinfo.CursorPageResponseIndexInfoDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoCreateRequest;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoCursorPageRequest;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoDto;
+import com.sprint.project.findex.dto.indexinfo.IndexInfoSortField;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoSummaryDto;
 import com.sprint.project.findex.dto.indexinfo.IndexInfoUpdateRequest;
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.global.exception.ApiException;
 import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.IndexInfoMapper;
-import com.sprint.project.findex.repository.IndexInfoRepository;
+import com.sprint.project.findex.repository.indexinfo.IndexInfoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -68,14 +69,14 @@ public class IndexInfoService {
   private CursorPageResponseIndexInfoDto toCursorPageDto(List<IndexInfo> indexInfos,
       IndexInfoCursorPageRequest request) {
     List<IndexInfoDto> content = indexInfoMapper.toDtoList(indexInfos);
-    String nextCursor = "";
+    String nextCursor = null;
     Long nextIdAfter = null;
     int pageSize = request.getSize();
     Long totalElements = indexInfoRepository.getTotalElements(request);
     boolean hasNext = false;
     if (content.size() > pageSize) {
       IndexInfoDto indexInfoDto = content.get(pageSize);
-      nextCursor = indexInfoDto.indexClassification();
+      nextCursor = getNextCursor(request.getSortField(), indexInfoDto);
       nextIdAfter = indexInfoDto.id();
       content.remove(pageSize);
       hasNext = true;
@@ -88,5 +89,9 @@ public class IndexInfoService {
         .totalElements(totalElements)
         .hasNext(hasNext)
         .build();
+  }
+
+  private String getNextCursor(IndexInfoSortField sortField, IndexInfoDto indexInfoDto) {
+    return sortField.getGetter().apply(indexInfoDto).toString();
   }
 }

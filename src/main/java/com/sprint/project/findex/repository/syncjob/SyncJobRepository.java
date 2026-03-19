@@ -1,7 +1,8 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.syncjob;
 
 import com.sprint.project.findex.entity.IndexInfo;
 import com.sprint.project.findex.entity.SyncJob;
+import com.sprint.project.findex.repository.syncjob.querydsl.SyncJobQDSLRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;

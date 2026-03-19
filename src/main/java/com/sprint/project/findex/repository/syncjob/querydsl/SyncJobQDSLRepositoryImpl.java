@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.syncjob.querydsl;
 
 import static com.sprint.project.findex.entity.QSyncJob.syncJob;
 

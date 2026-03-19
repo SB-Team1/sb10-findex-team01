@@ -33,4 +33,16 @@ public record StockMarketIndexRequest(
     @JsonProperty("beginLsYrEdVsFltRt") String beginLastYearEndVersusFluctuationRate,
     @JsonProperty("endLsYrEdVsFltRt") String endLastYearEndVersusFluctuationRate) {
 
+  public StockMarketIndexRequest {
+    if (resultType == null || resultType.isEmpty()) {
+      resultType = "json";
+    }
+    if (pageNo == 0) {
+      pageNo = 1;
+    }
+    if (numOfRows == 0) {
+      numOfRows = 10;
+    }
+  }
+
 }

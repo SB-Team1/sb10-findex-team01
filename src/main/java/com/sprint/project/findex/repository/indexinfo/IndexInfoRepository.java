@@ -1,9 +1,8 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.indexinfo;
 
 import com.sprint.project.findex.entity.IndexInfo;
 import java.util.List;
-import com.sprint.project.findex.repository.querydsl.IndexInfoQDSLRepository;
-import java.util.List;
+import com.sprint.project.findex.repository.indexinfo.querydsl.IndexInfoQDSLRepository;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

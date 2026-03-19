@@ -15,9 +15,9 @@ import com.sprint.project.findex.entity.SyncJob;
 import com.sprint.project.findex.global.exception.ApiException;
 import com.sprint.project.findex.global.exception.ErrorCode;
 import com.sprint.project.findex.mapper.SyncJobMapper;
-import com.sprint.project.findex.repository.IndexDataRepository;
-import com.sprint.project.findex.repository.IndexInfoRepository;
-import com.sprint.project.findex.repository.SyncJobRepository;
+import com.sprint.project.findex.repository.indexdata.IndexDataRepository;
+import com.sprint.project.findex.repository.indexinfo.IndexInfoRepository;
+import com.sprint.project.findex.repository.syncjob.SyncJobRepository;
 import com.sprint.project.findex.service.openapi.internal.PersistentWorker;
 import jakarta.servlet.http.HttpServletRequest;
 import java.net.URLEncoder;
@@ -188,13 +188,12 @@ public class SyncJobService {
     LocalDate baseDate = LocalDate.now().minusDays(1);
     LocalDate minimumDate = baseDate.minusDays(30); // 30일 전까지만 확인함
 
-    StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
-        .pageNo(1)
-        .numOfRows(10)
-        .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
-        .build();
-
     while (!baseDate.isBefore(minimumDate)) {
+      // api 요청 파라미터 설정
+      StockMarketIndexRequest stockMarketIndexRequest = StockMarketIndexRequest.builder()
+          .baseDate(baseDate.format(DateTimeFormatter.BASIC_ISO_DATE))
+          .build();
+
       StockMarketIndexResponse stockMarketIndexResponse = fetchStockIndex(
           stockMarketIndexRequest
       );

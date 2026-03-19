@@ -12,7 +12,8 @@ CREATE TABLE index_infos
   favorite             BOOLEAN DEFAULT FALSE NOT NULL
 );
 
-CREATE UNIQUE INDEX idx_index_infos ON index_infos (index_name, index_classification);
+CREATE UNIQUE INDEX uk_idx_index_infos ON index_infos (index_classification, index_name);
+CREATE INDEX idx_index_infos_name on index_infos (index_name);
 
 CREATE TABLE index_datas
 (

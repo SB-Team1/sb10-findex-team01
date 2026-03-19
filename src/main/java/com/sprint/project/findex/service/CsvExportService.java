@@ -5,7 +5,7 @@ import com.sprint.project.findex.dto.indexdata.IndexDataCsvHeader;
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.global.exception.ApiException;
 import com.sprint.project.findex.global.exception.ErrorCode;
-import com.sprint.project.findex.repository.IndexDataRepository;
+import com.sprint.project.findex.repository.indexdata.IndexDataRepository;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;

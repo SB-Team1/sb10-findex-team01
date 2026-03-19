@@ -1,4 +1,4 @@
-package com.sprint.project.findex.repository.projection;
+package com.sprint.project.findex.repository.dashboard.projection;
 
 public interface DashboardRankingProjection {
   Long getId();

@@ -1,7 +1,8 @@
-package com.sprint.project.findex.repository;
+package com.sprint.project.findex.repository.indexdata;
 
 import com.sprint.project.findex.entity.IndexData;
 import com.sprint.project.findex.entity.IndexInfo;
+import com.sprint.project.findex.repository.indexdata.querydsl.IndexDataQDSLRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
